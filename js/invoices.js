@@ -1,23 +1,7 @@
-// invoices.js
+// js/invoices.js
 
 // ===============================
 // INVOICE GENERATOR APP MAIN FILE
-// ===============================
-//
-// This file renders the invoice generator UI, handles all logic for
-// adding/editing/saving invoices, and manages the "All Invoices" list.
-//
-// --- SECTIONS ---
-// 1. Render Invoice Generator UI
-// 2. Add/Remove Invoice Items
-// 3. Calculate Totals
-// 4. Save Invoice to Firestore
-// 5. Download as PNG (dom-to-image)
-// 6. Print Invoice
-// 7. All Invoices Table (view, print, delete, filter, sort, search, pagination)
-// 8. Initial Load
-//
-// Make sure Firebase is initialized before this script runs!
 // ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -26,385 +10,387 @@ document.addEventListener("DOMContentLoaded", () => {
   const invoicePrintArea = document.getElementById("invoicePrintArea");
   if (invoicePrintArea) {
     invoicePrintArea.innerHTML = `
-      <!-- Invoice Generator Section -->
-      <section class="bg-white p-6 rounded shadow max-w-5xl mx-auto">
-        <header class="flex justify-between items-start mb-6">
-          <div>
-            <h1 class="text-2xl font-bold text-orange-900">Lush Patisserie</h1>
-            <p class="text-sm text-gray-700">Wow By Urban Tree, Medavakkam<br>Chennai, 600100<br>Phone: +91 877 896 7179</p>
-          </div>
-          <div class="text-right">
-            <h2 class="text-xl font-bold text-orange-900 border-b-2 border-orange-300 inline-block">INVOICE</h2>
-          </div>
-        </header>
-        <div class="flex flex-col lg:flex-row print:flex-row justify-between gap-6 bg-gray-50 print:bg-gray-200 p-6 rounded-lg border border-gray-300 print:border-gray-400 mb-6">
-          <div class="w-full md:w-1/2 space-y-2">
-            <label class="text-sm font-medium text-gray-600">Invoice #</label>
-            <input type="text" id="invoiceNumber" class="w-full p-2 border rounded" placeholder="INV-2025-001">
-            <label class="text-sm font-medium text-gray-600">Invoice Date</label>
-            <input type="date" id="invoiceDate" class="w-full p-2 border rounded">
-            <label class="text-sm font-medium text-gray-600">Due Date</label>
-            <input type="date" id="dueDate" class="w-full p-2 border rounded">
-          </div>
-          <div class="w-full md:w-1/2 space-y-2">
-            <label class="text-sm font-medium text-gray-600">Bill To</label>
-            <input type="text" id="clientName" class="w-full p-2 border rounded" placeholder="Client Name">
-            <textarea id="clientAddress" class="w-full p-2 border rounded" placeholder="Client Address"></textarea>
-            <input type="text" id="clientPhone" class="w-full p-2 border rounded" placeholder="Client Phone">
-            <input type="email" id="clientEmail" class="w-full p-2 border rounded" placeholder="Contact">
+      <div id="invoice-loading" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-md hidden transition-opacity duration-300">
+        <div class="relative w-16 h-16 mb-4">
+           <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+           <img src="assets/Flowr Logo.png" class="relative w-full h-full rounded-full animate-breath shadow-lg">
+        </div>
+        <p class="text-sm text-slate-500 font-semibold animate-pulse tracking-wide">Syncing Invoices...</p>
+      </div>
 
-          </div>
-        </div>
-        <table class="w-full text-sm border mb-4">
-          <thead class="bg-blue-100 text-gray-800">
-            <tr>
-              <th class="p-2 border">Item</th>
-              <th class="p-2 border">Qty</th>
-              <th class="p-2 border">Price (₹)</th>
-              <th class="p-2 border">Amount</th>
-              <th class="p-2 border print:hidden png-hide">Action</th>
-            </tr>
-          </thead>
-          <tbody id="invoiceItems"></tbody>
-        </table>
-        <button id="addItemBtn" class="mt-2 mb-6 px-4 py-2 bg-orange-800 text-white rounded hover:bg-orange-900 print:hidden png-hide">+ Add Item</button>
-        <div class="flex flex-col md:flex-row justify-between gap-6 mb-6">
-          <textarea id="invoiceNotes" class="w-full md:w-2/3 p-2 border rounded" placeholder="Notes: payment terms, delivery info, etc."></textarea>
-          <div class="bg-yellow-50 print:bg-yellow-100 p-4 rounded shadow-sm md:w-1/3 space-y-2 border border-yellow-200 print:border-yellow-400">
-            <div class="flex justify-between text-sm text-gray-800">
-              <span>Subtotal:</span>
-              <span id="subtotal">₹0.00</span>
+      <section class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-5xl mx-auto transition-colors duration-300">
+        
+        <div id="actualInvoicePaper" class="bg-white text-slate-900 p-8 rounded-lg shadow-md border border-slate-200 mx-auto relative" style="max-width: 800px; min-height: 800px; display: flex; flex-direction: column;">
+            
+            <header class="flex justify-between items-start mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Lush Patisserie</h1>
+                    <p class="text-sm text-slate-500 mt-1 font-medium">Wow By Urban Tree, Medavakkam<br>Chennai, 600100<br>Phone: +91 877 896 7179</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-4xl font-black text-slate-700 uppercase tracking-widest select-none">Invoice</h2>
+                </div>
+            </header>
+
+            <div class="flex flex-col lg:flex-row print:flex-row justify-between gap-8 mb-8">
+                <div class="w-full md:w-5/12 space-y-3">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Invoice Details</label>
+                    <div class="grid grid-cols-1 gap-2">
+                        <input type="text" id="invoiceNumber" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="INV-2025-001">
+                        <div class="flex gap-2">
+                            <div class="w-1/2">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Date</span>
+                                <input type="date" id="invoiceDate" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="w-1/2">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Due</span>
+                                <input type="date" id="dueDate" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-6/12 space-y-3">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Bill To</label>
+                    <input type="text" id="clientName" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Client Name">
+                    <textarea id="clientAddress" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder-slate-400 resize-none focus:ring-2 focus:ring-blue-500 outline-none transition" rows="2" placeholder="Address"></textarea>
+                    <div class="flex gap-2">
+                        <input type="text" id="clientPhone" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Phone">
+                        <input type="email" id="clientEmail" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Email">
+                    </div>
+                </div>
             </div>
-            <hr class="border-gray-300">
-            <div class="flex justify-between text-xl font-bold text-gray-900">
-              <span>Invoice Total:</span>
-              <span id="total">₹0.00</span>
+
+            <table class="w-full text-sm mb-6 flex-grow-0">
+                <thead class="bg-slate-100 text-slate-600 border-y border-slate-200">
+                    <tr>
+                    <th class="py-3 px-2 text-left font-semibold w-1/2">Item Description</th>
+                    <th class="py-3 px-2 text-center font-semibold w-20">Qty</th>
+                    <th class="py-3 px-2 text-center font-semibold w-24">Price</th>
+                    <th class="py-3 px-2 text-right font-semibold w-24">Amount</th>
+                    <th class="py-3 px-2 w-10 print:hidden png-hide"></th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItems" class="divide-y divide-slate-100"></tbody>
+            </table>
+
+            <button id="addItemBtn" class="mb-8 flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50 transition print:hidden png-hide">
+                <i data-feather="plus-circle" class="w-4 h-4"></i> Add Line Item
+            </button>
+
+            <div class="flex flex-col md:flex-row justify-between gap-8 mb-8">
+                <div class="w-full md:w-2/3">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Notes / Terms</label>
+                    <textarea id="invoiceNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 resize-none h-24 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Payment is due within 7 days."></textarea>
+                </div>
+                <div class="w-full md:w-1/3 flex flex-col justify-end">
+                    <div class="flex justify-between text-sm text-slate-500 mb-2 px-2">
+                        <span>Subtotal</span>
+                        <span id="subtotal" class="font-mono">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-100 p-3 rounded-lg border border-slate-200">
+                        <span class="text-base font-bold text-slate-700">Total</span>
+                        <span id="total" class="text-xl font-bold text-slate-900 font-mono">₹0.00</span>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        <div class="mt-8 text-center print:block avoid-break print:mt-4 print:pb-4">
-          <div class="inline-block">
-            <p class="text-sm text-gray-600 italic">Signature</p>
-            <p class="text-xl mt-2 font-signature">Vaishnavi</p>
-            <p class="text-xs text-gray-500">Owner</p>
-            <p class="text-base italic text-orange-800 font-medium mt-4">Thank you for your business! ❤️</p>
-          </div>
+
+            <div class="flex-grow"></div>
+
+            <div class="mt-8 pt-8 border-t border-slate-100 flex flex-col items-center justify-center text-center print:block avoid-break">
+                
+                <p class="font-dancing text-4xl text-slate-800 mb-1 transform -rotate-2 origin-center" style="font-family: 'Dancing Script', cursive;">Vaishnavi Karthick</p>
+                
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-4">Owner</p>
+                
+                <p class="text-sm italic text-slate-500 font-medium">Thank you for your business! ❤️</p>
+            </div>
+
         </div>
       </section>
-      <!-- Invoice Actions Section (Save/Print/PNG) -->
-      <section id="invoiceActionsSection" class="bg-white p-6 rounded shadow max-w-5xl mx-auto my-6 flex flex-col items-center print:hidden png-hide">
+
+      <section id="invoiceActionsSection" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-5xl mx-auto my-6 print:hidden png-hide">
         <div class="flex flex-col sm:flex-row gap-4 justify-center w-full">
-          <button id="newInvoiceBtn" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 print:hidden png-hide">New Invoice</button>
-          <button id="downloadPngBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 png-hide">Download as PNG</button>
-          <button id="printInvoiceBtn" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 png-hide">Print / Save PDF</button>
-          <button id="saveInvoiceBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 print:hidden png-hide">Save Invoice</button>
+          <button id="newInvoiceBtn" class="flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 px-6 py-3 rounded-xl font-medium transition">
+             <i data-feather="file-plus" class="w-4 h-4"></i> New
+          </button>
+          <button id="saveInvoiceBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition shadow-lg shadow-blue-200 dark:shadow-none">
+             <i data-feather="save" class="w-4 h-4"></i> Save Invoice
+          </button>
+          <div class="w-px bg-slate-200 dark:bg-slate-700 mx-2 hidden sm:block"></div>
+          <button id="downloadPngBtn" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition">
+             <i data-feather="image" class="w-4 h-4"></i> PNG
+          </button>
+          <button id="printInvoiceBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-600 dark:hover:bg-slate-500 px-6 py-3 rounded-xl font-medium transition">
+             <i data-feather="printer" class="w-4 h-4"></i> Print/PDF
+          </button>
         </div>
       </section>
-      <!-- All Invoices Section -->
-      <section id="allInvoicesSection" class="bg-white p-6 rounded shadow max-w-5xl mx-auto mt-10 print:hidden">
-  <h2 class="text-xl font-bold mb-4 text-orange-900">All Invoices</h2>
-  <div id="invoiceControlsRow" class="flex flex-row gap-4 mb-4 items-end w-full">
-    <input
-      type="month"
-      id="filterMonthYear"
-      class="p-2 border rounded flex-1 min-w-[160px] max-w-[200px] h-10"
-      style="height: 40px;"
-      aria-label="Filter by month"
-    />
-    <input
-      type="text"
-      id="invoiceSearchBox"
-      class="p-2 border rounded flex-1 min-w-[180px] max-w-[260px] h-10"
-      placeholder="Search by invoice #, client, date..."
-      style="height: 40px;"
-      aria-label="Search invoices"
-    />
-    <select
-      id="sortInvoicesBy"
-      class="p-2 border rounded flex-1 min-w-[160px] max-w-[220px] h-10"
-      style="height: 40px;"
-      aria-label="Sort invoices"
-    >
-      <option value="invoiceNumber-desc">Invoice # (desc)</option>
-      <option value="invoiceNumber-asc">Invoice # (asc)</option>
-      <option value="invoiceDate-desc" selected>Date (newest)</option>
-      <option value="invoiceDate-asc">Date (oldest)</option>
-      <option value="client-asc">Client (A-Z)</option>
-      <option value="client-desc">Client (Z-A)</option>
-      <option value="total-desc">Total (high-low)</option>
-      <option value="total-asc">Total (low-high)</option>
-    </select>
-  </div>
 
-  <div id="pendingInvoicesCard" class="mt-2 p-3 rounded border bg-orange-50 text-sm">
-    <div class="flex items-center justify-between">
-      <div><strong>Pending invoices</strong> (Daily Logs not invoiced for this month): <span id="pendingCount">0</span></div>
-      <button id="openPendingList" class="px-3 py-1 bg-orange-600 text-white rounded text-xs">Review</button>
-    </div>
-    <div id="pendingList" class="mt-2 hidden"></div>
-  </div>
+      <section id="allInvoicesSection" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-5xl mx-auto mt-10 print:hidden">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h2 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <i data-feather="list" class="w-5 h-5 text-blue-500"></i> Invoice History
+            </h2>
+            
+            <div id="invoiceControlsRow" class="flex flex-wrap gap-2 w-full md:w-auto">
+                <input type="month" id="filterMonthYear" class="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                
+                <input type="text" id="invoiceSearchBox" class="p-2 flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none min-w-[150px]" placeholder="Search..." />
+                
+                <select id="sortInvoicesBy" class="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="invoiceDate-desc">Newest First</option>
+                    <option value="invoiceDate-asc">Oldest First</option>
+                    <option value="total-desc">High Amount</option>
+                    <option value="client-asc">Client A-Z</option>
+                </select>
+            </div>
+        </div>
 
-  <div id="invoicesList" class="overflow-x-auto"></div>
-</section>
+        <div id="pendingInvoicesCard" class="mb-6 p-4 rounded-xl border border-orange-200 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-800/50 text-sm hidden">
+            <div class="flex items-center justify-between text-orange-800 dark:text-orange-200">
+                <div class="flex items-center gap-2">
+                    <i data-feather="alert-circle" class="w-4 h-4"></i>
+                    <span><strong>Pending:</strong> <span id="pendingCount">0</span> unbilled logs found.</span>
+                </div>
+                <button id="openPendingList" class="px-3 py-1 bg-orange-100 hover:bg-orange-200 dark:bg-orange-800 dark:hover:bg-orange-700 text-orange-700 dark:text-orange-100 rounded-lg font-medium text-xs transition">Review</button>
+            </div>
+            <div id="pendingList" class="mt-3 hidden space-y-2"></div>
+        </div>
+
+        <div id="invoicesList" class="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-xl min-h-[200px]"></div>
+      </section>
     `;
+    
+    // Initialize icons immediately after rendering
+    if (window.feather) feather.replace();
   }
 
   const notyf = new Notyf({
     duration: 2500,
-    position: { x: 'Center', y: 'top' }
+    position: { x: 'center', y: 'top' },
+    ripple: true,
+    types: [
+      { type: 'success', background: '#10B981', icon: false }, 
+      { type: 'error', background: '#EF4444', icon: false }    
+    ]
   });
 
-  // Re-run prefill when arriving via hash navigation (from Daily Logs)
-window.addEventListener("hashchange", () => {
-  if (window.location.hash.startsWith("#invoicePrintArea")) {
-    // Delay slightly to ensure invoice UI is rendered
-    setTimeout(() => {
-      if (typeof window.prefillInvoiceFromDailyLog === "function") {
-        window.prefillInvoiceFromDailyLog();
-      }
-    }, 100);
-  }
-});
+  // Re-run prefill when arriving via hash navigation
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash.startsWith("#invoicePrintArea")) {
+      setTimeout(() => {
+        if (typeof window.prefillInvoiceFromDailyLog === "function") {
+          window.prefillInvoiceFromDailyLog();
+        }
+      }, 100);
+    }
+  });
 
 
-  // 1A. ADD PRINT-SAFE AND RESPONSIVE CSS
-  // -------------------------------------
+// 1A. CSS STYLES (Print, Helper & Fonts)
+  // ---------------------------------------
   const style = document.createElement("style");
   style.innerHTML = `
+    /* Import Cursive Font */
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
+
+    /* --- PRINT OPTIMIZATIONS --- */
     @media print {
-      .avoid-break {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        page-break-before: auto;
+      @page { 
+        margin: 10mm; 
+        size: A4 portrait; 
       }
-      .avoid-break * {
-        break-inside: avoid;
-        page-break-inside: avoid;
+      
+      body { 
+        background: white !important; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
       }
-    }
-    #filterMonthYear, #invoiceSearchBox, #sortInvoicesBy {
-  height: 40px;
-  min-width: 160px;
-  max-width: 260px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-#filterMonthYear:focus, #invoiceSearchBox:focus, #sortInvoicesBy:focus {
-  border-color: #fb923c;
-  box-shadow: 0 0 0 1px #fb923c;
-}
 
-    thead {
-      position: sticky;
-      top: 0;
-      background: #f3f4f6;
-      z-index: 1;
-    }
-    #invoiceItems textarea.item-name {
-      width: 100%;
-      min-height: 2.2em;
-      max-height: 12em;
-      overflow: hidden;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 1em;
-      background: #fff;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      padding: 0.25rem 0.5rem;
-      resize: none;
-      box-sizing: border-box;
-      line-height: 1.4;
-    }
-      .glass-loader {
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
-  background: rgba(255,255,255,0.6);
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  transition: background 0.3s, backdrop-filter 0.3s;
-  min-height: 80px;
-  min-width: 200px;
-  margin: 0 auto;
-
-  .spinner {
-  width: 32px;
-  height: 32px;
-  border: 4px solid rgba(255,255,255,0.5);
-  border-top: 4px solid #fb923c;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 8px;
-}
-#invoicesList {
-  overflow-y: visible !important;
-  max-height: none !important;
-  min-height: unset !important;
-  scrollbar-width: none; /* Firefox */
-}
-#invoicesList::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
-}
-
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-}
-
-  `;
-  document.head.appendChild(style);
-
-  // Center invoice on screen and print, and set max width
-  const centerInvoiceStyle = document.createElement("style");
-  centerInvoiceStyle.innerHTML = `
-    #invoicePrintArea > section {
-      max-width: 800px;
-      width: 100%;
-      margin-left: auto;
-      margin-right: auto;
-      box-sizing: border-box;
-    }
-    @media (max-width: 850px) {
-      #invoicePrintArea > section {
-        max-width: 98vw;
-        margin: 1vw;
+      /* Hide App UI Elements */
+      #sidebar, #mainContent > header, #invoiceActionsSection, #allInvoicesSection, #invoice-loading { 
+        display: none !important; 
       }
-    }
-    @media print {
-      html, body {
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
+
+      /* Reset Main Container layout */
+      #mainContent { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      #invoicePrintArea { display: block !important; padding: 0 !important; margin: 0 !important; }
+      #invoicePrintArea > section { 
+        box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; max-width: none !important;
         background: white !important;
       }
-      #invoicePrintArea > section {
-        width: 190mm !important;
-        max-width: 190mm !important;
-        min-width: 0 !important;
-        margin: 10mm auto !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        background: white !important;
+
+      /* --- COMPACTING THE INVOICE FOR ONE PAGE --- */
+      #actualInvoicePaper {
+        /* Switch off Flexbox for print so items flow naturally */
+        display: block !important; 
+        
+        border: none !important; 
+        box-shadow: none !important; 
+        margin: 0 auto !important; 
+        width: 100% !important; 
+        
+        /* Remove fixed height so it collapses to fit content */
+        min-height: 0 !important; 
+        height: auto !important;
+        
+        /* Reduce padding to maximize space */
+        padding: 0 !important; 
+        transform: none !important;
       }
-      .print\\:hidden {
+
+      /* CRITICAL FIX: Hide the spacer so the footer snaps up */
+      .flex-grow {
         display: none !important;
       }
-      .print\\:block {
-        display: block !important;
+
+      /* Reduce gaps between sections for print */
+      #actualInvoicePaper header.mb-8 { margin-bottom: 1.5rem !important; }
+      #actualInvoicePaper .mb-8 { margin-bottom: 1rem !important; }
+      
+      /* Ensure the signature block has a little breathing room but not too much */
+      #actualInvoicePaper .mt-8 { margin-top: 2rem !important; }
+
+      /* Prevent the signature block from breaking internally */
+      .avoid-break { 
+        break-inside: avoid; 
+        page-break-inside: avoid;
       }
+      
+      /* Hide scrollbars */
+      ::-webkit-scrollbar { display: none; }
+    }
+    /* --------------------------- */
+
+    .font-dancing {
+      font-family: 'Dancing Script', cursive;
+    }
+    
+    .autocomplete-dropdown {
+      box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    
+    #invoiceItems textarea.item-name {
+      min-height: 2.5em;
+      background: transparent;
+      resize: none;
+      overflow: hidden;
+      line-height: 1.4;
+    }
+    #invoiceItems input:focus, #invoiceItems textarea:focus {
+        background-color: #f8fafc; /* slate-50 */
     }
   `;
-  document.head.appendChild(centerInvoiceStyle);
+  document.head.appendChild(style);
 
   // 2. ADD/REMOVE INVOICE ITEMS
   // ---------------------------
   const db = firebase.firestore();
 
-  // --- CLIENT AUTOFILL & INVOICE NUMBER AUTOGENERATE ---
+  // Loader Helper
+  function showLoading(show = true) {
+    const loader = document.getElementById("invoice-loading");
+    if (show) loader.classList.remove("hidden");
+    else loader.classList.add("hidden");
+  }
+
+  // Helper to increment Invoice Number
   function incrementInvoiceNumber(lastInvoiceNo) {
-    // Example: Z-08 → Z-09
     const match = lastInvoiceNo.match(/^([A-Za-z]+)-(\d+)$/);
-    if (!match) return ""; // fallback
+    if (!match) return ""; 
     const prefix = match[1];
     const num = parseInt(match[2], 10) + 1;
     return `${prefix}-${String(num).padStart(2, "0")}`;
   }
 
+  // --- CLIENT AUTOFILL LOGIC ---
   document.getElementById("clientName").addEventListener("blur", async function() {
     const clientName = this.value.trim();
     if (!clientName) return;
 
-    // 1. Fetch client details from Firestore
     let clientDoc = null;
     try {
-      const clientSnap = await db.collection("clients")
-        .where("name", "==", clientName)
-        .limit(1)
-        .get();
+      const clientSnap = await db.collection("clients").where("name", "==", clientName).limit(1).get();
       if (!clientSnap.empty) {
         clientDoc = clientSnap.docs[0].data();
         document.getElementById("clientAddress").value = clientDoc.address || "";
         document.getElementById("clientPhone").value = clientDoc.phone || "";
         document.getElementById("clientEmail").value = clientDoc.email || "";
       }
-    } catch (err) {
-      console.error("Error fetching client:", err);
-    }
+    } catch (err) { console.error(err); }
 
-    // 2. Fetch last invoice for this client
+    // Fetch last invoice #
     try {
       const invoiceSnap = await db.collection("invoices")
         .where("client.name", "==", clientName)
-        .orderBy("createdAt", "desc")
-        .limit(1)
-        .get();
+        .orderBy("createdAt", "desc").limit(1).get();
+      
       if (!invoiceSnap.empty) {
         const lastInvoice = invoiceSnap.docs[0].data();
-        const lastInvoiceNo = lastInvoice.invoiceNumber || "";
-        const newInvoiceNo = incrementInvoiceNumber(lastInvoiceNo);
-        if (newInvoiceNo) {
-          document.getElementById("invoiceNumber").value = newInvoiceNo;
-        }
+        const newInvoiceNo = incrementInvoiceNumber(lastInvoice.invoiceNumber || "");
+        if (newInvoiceNo) document.getElementById("invoiceNumber").value = newInvoiceNo;
       } else {
-        // If no previous invoice, generate first invoice number
-        // Example: Zonkk → Z-01
         const prefix = clientName[0].toUpperCase();
         document.getElementById("invoiceNumber").value = `${prefix}-01`;
       }
-    } catch (err) {
-      console.error("Error fetching last invoice:", err);
-    }
+    } catch (err) { console.error(err); }
   });
 
   const itemsBody = document.getElementById("invoiceItems");
 
   function addRow(item = {}) {
     const row = document.createElement("tr");
+    row.className = "group hover:bg-slate-50 transition-colors";
     row.innerHTML = `
-      <td class="border p-1 align-middle">
-        <textarea class="item-name" placeholder="Item" rows="1">${item.name || ""}</textarea>
+      <td class="p-2 align-top">
+        <textarea class="item-name w-full p-1 text-slate-700 font-medium outline-none" placeholder="Item name...">${item.name || ""}</textarea>
       </td>
-      <td class="border p-1 text-center align-middle">
-        <input type="number" class="w-full p-1 border rounded qty text-center" value="${item.qty || 1}">
+      <td class="p-2 align-top">
+        <input type="number" class="w-full p-1 text-center text-slate-600 outline-none qty bg-transparent" value="${item.qty || 1}">
       </td>
-      <td class="border p-1 text-center align-middle">
-        <input type="number" class="w-full p-1 border rounded price text-center" value="${item.price || 0}">
+      <td class="p-2 align-top">
+        <input type="number" class="w-full p-1 text-center text-slate-600 outline-none price bg-transparent" value="${item.price || 0}">
       </td>
-      <td class="border p-1 text-center align-middle text-gray-700 font-semibold amount">₹${item.amount || "0.00"}</td>
-      <td class="border p-1 text-center align-middle print:hidden png-hide">
-        <button class="text-red-600 deleteBtn png-hide">🗑️</button>
+      <td class="p-2 align-top text-right font-mono text-slate-800 font-semibold amount">
+        ₹${item.amount || "0.00"}
+      </td>
+      <td class="p-2 align-middle text-center print:hidden png-hide">
+        <button class="deleteBtn text-slate-400 hover:text-red-500 transition"><i data-feather="trash-2" class="w-4 h-4"></i></button>
       </td>
     `;
-    row.querySelector(".qty").addEventListener("input", updateTotals);
-    row.querySelector(".price").addEventListener("input", updateTotals);
+    
+    // Logic
+    const qtyInput = row.querySelector(".qty");
+    const priceInput = row.querySelector(".price");
+    
+    [qtyInput, priceInput].forEach(inp => {
+        inp.addEventListener("input", updateTotals);
+    });
+
     row.querySelector(".deleteBtn").addEventListener("click", () => {
       row.remove();
       updateTotals();
     });
 
-    // --- AUTO-EXPAND TEXTAREA ---
+    // Auto-expand
     const itemTextarea = row.querySelector(".item-name");
-    function autoExpandTextarea(el) {
+    function autoExpand(el) {
       el.style.height = "auto";
       el.style.height = (el.scrollHeight) + "px";
     }
-    itemTextarea.addEventListener("input", function() {
-      autoExpandTextarea(this);
-    });
-    // Set initial height
-    autoExpandTextarea(itemTextarea);
+    itemTextarea.addEventListener("input", () => autoExpand(itemTextarea));
+    autoExpand(itemTextarea);
 
     itemsBody.appendChild(row);
+    if(window.feather) feather.replace();
     updateTotals();
   }
 
-  // Add first row by default
   document.getElementById("addItemBtn").addEventListener("click", () => addRow());
-  addRow();
+  addRow(); // Initial row
 
   // 3. CALCULATE TOTALS
   // -------------------
@@ -421,170 +407,119 @@ window.addEventListener("hashchange", () => {
     document.getElementById("total").textContent = `₹${subtotal.toFixed(2)}`;
   }
 
-  // 4. SAVE INVOICE TO FIRESTORE
-  // ----------------------------
+  // 4. SAVE INVOICE
+  // ---------------
   document.addEventListener("click", function(e) {
-  if (e.target && e.target.id === "saveInvoiceBtn") {
-    const selectedDailyLogId = window.currentDailyLogIdForInvoice || null;
-
-    const invoiceData = {
-      invoiceNumber: document.getElementById("invoiceNumber").value.trim(),
-      invoiceDate: document.getElementById("invoiceDate").value,
-      dueDate: document.getElementById("dueDate").value,
-      client: {
-        name: document.getElementById("clientName").value.trim(),
-        address: document.getElementById("clientAddress").value.trim(),
-        phone: document.getElementById("clientPhone").value.trim(),
-        email: document.getElementById("clientEmail").value.trim()
-      },
-      items: [],
-      notes: document.getElementById("invoiceNotes").value.trim(),
-      subtotal: document.getElementById("subtotal").textContent,
-      total: document.getElementById("total").textContent,
-      createdAt: new Date(),
-      dailyLogId: selectedDailyLogId || window.currentDailyLogIdForInvoice || null
-    };
-
-    itemsBody.querySelectorAll("tr").forEach(row => {
-      const item = {
-        name: row.querySelector("textarea.item-name").value,
-        qty: parseFloat(row.querySelector(".qty").value) || 0,
-        price: parseFloat(row.querySelector(".price").value) || 0,
-        amount: row.querySelector(".amount").textContent
+    if (e.target && e.target.closest("#saveInvoiceBtn")) {
+      const btn = document.getElementById("saveInvoiceBtn");
+      const originalText = btn.innerHTML;
+      
+      // Better button spinner
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg> Saving...`;
+      
+      const invoiceData = {
+        invoiceNumber: document.getElementById("invoiceNumber").value.trim(),
+        invoiceDate: document.getElementById("invoiceDate").value,
+        dueDate: document.getElementById("dueDate").value,
+        client: {
+          name: document.getElementById("clientName").value.trim(),
+          address: document.getElementById("clientAddress").value.trim(),
+          phone: document.getElementById("clientPhone").value.trim(),
+          email: document.getElementById("clientEmail").value.trim()
+        },
+        items: [],
+        notes: document.getElementById("invoiceNotes").value.trim(),
+        subtotal: document.getElementById("subtotal").textContent,
+        total: document.getElementById("total").textContent,
+        createdAt: new Date(),
+        dailyLogId: window.currentDailyLogIdForInvoice || null
       };
-      invoiceData.items.push(item);
-    });
 
-    db.collection("invoices").add(invoiceData)
-      .then(async (docRef) => {
-        notyf.success("Invoice saved successfully!");
-        document.getElementById("successSound")?.play();
-        loadAllInvoices();
-        resetInvoiceForm();
-
-        // Link back to dailyLog if set
-        if (invoiceData.dailyLogId) {
-          await db.collection("dailyLogs").doc(invoiceData.dailyLogId).update({
-            invoiceId: docRef.id
-          });
-          window.currentDailyLogIdForInvoice = null;
-        }
-      })
-      .catch(err => {
-        console.error("Error saving invoice:", err);
-        notyf.error("Failed to save invoice.");
+      itemsBody.querySelectorAll("tr").forEach(row => {
+        invoiceData.items.push({
+          name: row.querySelector("textarea.item-name").value,
+          qty: parseFloat(row.querySelector(".qty").value) || 0,
+          price: parseFloat(row.querySelector(".price").value) || 0,
+          amount: row.querySelector(".amount").textContent
+        });
       });
-  }
-});
 
-
-  // 5. DOWNLOAD AS PNG (dom-to-image)
-  // ---------------------------------
-  const setupPngDownload = () => {
-    const downloadBtn = document.getElementById("downloadPngBtn");
-    if (downloadBtn && window.domtoimage) {
-      downloadBtn.addEventListener("click", function() {
-        const invoiceSection = document.querySelector("#invoicePrintArea > section");
-        const toHide = document.querySelectorAll(".png-hide");
-
-        // Save original styles
-        const originalMaxWidth = invoiceSection.style.maxWidth;
-        const originalMarginLeft = invoiceSection.style.marginLeft;
-        const originalMarginRight = invoiceSection.style.marginRight;
-        const originalWidth = invoiceSection.style.width;
-
-        // Hide UI controls
-        toHide.forEach(el => el.style.visibility = "hidden");
-
-        // Remove centering and max-width for PNG, set a fixed width
-        invoiceSection.style.maxWidth = "none";
-        invoiceSection.style.marginLeft = "0";
-        invoiceSection.style.marginRight = "0";
-        invoiceSection.style.width = "700px";
-
-        setTimeout(function() {
-          window.domtoimage.toPng(invoiceSection)
-            .then(function(dataUrl) {
-              // Restore UI controls and styles
-              toHide.forEach(el => el.style.visibility = "");
-              invoiceSection.style.maxWidth = originalMaxWidth;
-              invoiceSection.style.marginLeft = originalMarginLeft;
-              invoiceSection.style.marginRight = originalMarginRight;
-              invoiceSection.style.width = originalWidth;
-
-              const link = document.createElement('a');
-              link.download = 'invoice.png';
-              link.href = dataUrl;
-              link.click();
-            })
-            .catch(function(error) {
-              toHide.forEach(el => el.style.visibility = "");
-              invoiceSection.style.maxWidth = originalMaxWidth;
-              invoiceSection.style.marginLeft = originalMarginLeft;
-              invoiceSection.style.marginRight = originalMarginRight;
-              invoiceSection.style.width = originalWidth;
-              alert('Could not generate image: ' + error);
-            });
-        }, 100);
-      });
-    }
-  };
-
-  if (window.domtoimage) {
-    setupPngDownload();
-  } else {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js";
-    script.onload = setupPngDownload;
-    document.head.appendChild(script);
-  }
-
-  // 6. PRINT INVOICE
-  // ----------------
-  document.addEventListener("click", function(e) {
-    if (e.target && e.target.id === "printInvoiceBtn") {
-      window.print();
+      db.collection("invoices").add(invoiceData)
+        .then(async (docRef) => {
+          notyf.success("Invoice saved!");
+          document.getElementById("successSound")?.play();
+          
+          if (invoiceData.dailyLogId) {
+            await db.collection("dailyLogs").doc(invoiceData.dailyLogId).update({ invoiceId: docRef.id });
+            window.currentDailyLogIdForInvoice = null;
+          }
+          
+          loadAllInvoices();
+          resetInvoiceForm();
+        })
+        .catch(err => {
+          console.error(err);
+          notyf.error("Failed to save.");
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            if(window.feather) feather.replace();
+        });
     }
   });
 
-  async function loadCandidateDailyLogs() {
-  const date = document.getElementById("invoiceDate")?.value || "";
-  const client = document.getElementById("clientName")?.value?.trim() || "";
-  const select = document.getElementById("linkDailyLogSelect");
-  if (!select || !date || !client) return;
+  // 5. DOWNLOAD PNG
+  // ---------------
+  const setupPngDownload = () => {
+    const downloadBtn = document.getElementById("downloadPngBtn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", function() {
+        // We capture #actualInvoicePaper instead of the whole section
+        const node = document.getElementById("actualInvoicePaper");
+        const toHide = document.querySelectorAll(".png-hide");
+        
+        toHide.forEach(el => el.style.visibility = "hidden");
+        const originalBorder = node.style.border;
+        node.style.border = "none"; // Clean look
 
-  // Fetch logs for date range around selected date and same client
-  try {
-    const snap = await db.collection("dailyLogs")
-      .where("date", "==", date)
-      .get();
-
-    const options = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      // Simple client-name linkage: list logs for this date and client
-const sameClient = (d.client || "").trim().toLowerCase() === client.toLowerCase();
-if (sameClient) {
-  const total = (d.totalRevenue ?? 0).toFixed?.(2) ?? String(d.totalRevenue ?? 0);
-  options.push({ id: doc.id, date: d.date, client: d.client, total });
-}
-    });
-
-    select.innerHTML = '<option value="">— Optional: select a daily log to link —</option>';
-    options.forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o.id;
-      opt.textContent = `${o.date} • ${o.client} • ₹${o.total}`;
-      select.appendChild(opt);
-    });
-  } catch (err) {
-    console.error("Failed to load candidate daily logs:", err);
+        window.domtoimage.toPng(node)
+          .then(function(dataUrl) {
+            toHide.forEach(el => el.style.visibility = "");
+            node.style.border = originalBorder;
+            const link = document.createElement('a');
+            link.download = `Invoice_${document.getElementById('invoiceNumber').value || 'New'}.png`;
+            link.href = dataUrl;
+            link.click();
+          })
+          .catch(function(error) {
+            toHide.forEach(el => el.style.visibility = "");
+            node.style.border = originalBorder;
+            console.error('oops, something went wrong!', error);
+          });
+      });
+    }
+  };
+  
+  if (window.domtoimage) setupPngDownload();
+  else {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js";
+    s.onload = setupPngDownload;
+    document.head.appendChild(s);
   }
-}
 
+  // 6. PRINT
+  // --------
+  document.addEventListener("click", (e) => {
+    if (e.target && e.target.closest("#printInvoiceBtn")) window.print();
+  });
 
-  // 7. ALL INVOICES TABLE (VIEW, PRINT, DELETE, FILTER, SORT, SEARCH, PAGINATION)
-  // -----------------------------------------------------------------------------
+  // 7. ALL INVOICES TABLE
+  // ---------------------
   let currentPage = 1;
   const invoicesPerPage = 10;
   let filteredInvoices = [];
@@ -594,15 +529,13 @@ if (sameClient) {
     const invoicesList = document.getElementById("invoicesList");
     if (!invoicesList) return;
 
-    // Filter by search box
+    // Filter
     const searchVal = document.getElementById("invoiceSearchBox")?.value?.toLowerCase() || "";
-    filteredInvoices = docs.filter(d => {
-      return (
-        (d.invoiceNumber || "").toLowerCase().includes(searchVal) ||
-        (d.client?.name || "").toLowerCase().includes(searchVal) ||
-        (d.invoiceDate || "").toLowerCase().includes(searchVal)
-      );
-    });
+    filteredInvoices = docs.filter(d => 
+       (d.invoiceNumber || "").toLowerCase().includes(searchVal) ||
+       (d.client?.name || "").toLowerCase().includes(searchVal) ||
+       (d.invoiceDate || "").toLowerCase().includes(searchVal)
+    );
 
     // Pagination
     const totalPages = Math.ceil(filteredInvoices.length / invoicesPerPage);
@@ -610,98 +543,85 @@ if (sameClient) {
     const startIdx = (currentPage - 1) * invoicesPerPage;
     const pageDocs = filteredInvoices.slice(startIdx, startIdx + invoicesPerPage);
 
-    // Table HTML
     let html = `
-      <table class="w-full text-sm border rounded bg-white">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="border p-2 text-center font-semibold">Invoice #</th>
-            <th class="border p-2 text-center font-semibold">Date</th>
-            <th class="border p-2 text-center font-semibold">Client</th>
-            <th class="border p-2 text-center font-semibold">Total</th>
-            <th class="border p-2 text-center font-semibold">Actions</th>
+      <table class="w-full text-sm text-left border-collapse">
+        <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+          <tr>
+            <th class="p-3">Invoice #</th>
+            <th class="p-3">Date</th>
+            <th class="p-3">Client</th>
+            <th class="p-3 text-right">Total</th>
+            <th class="p-3 text-center">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
     `;
 
-    pageDocs.forEach(d => {
-      html += `
-        <tr>
-          <td class="border p-2 text-center">${d.invoiceNumber || ""}</td>
-          <td class="border p-2 text-center">${d.invoiceDate || ""}</td>
-          <td class="border p-2 text-center">${d.client?.name || ""}</td>
-          <td class="border p-2 text-center">${d.total || ""}</td>
-          <td class="border p-2 text-center flex gap-2 justify-center">
-            <button class="viewInvoiceBtn" data-id="${d.id}" title="View"><i data-feather="eye"></i></button>
-            <button class="printInvoiceBtn" data-id="${d.id}" title="Print"><i data-feather="printer"></i></button>
-            <button class="deleteInvoiceBtn" data-id="${d.id}" title="Delete"><i data-feather="trash-2"></i></button>
-          </td>
-        </tr>
-      `;
-    });
+    if(pageDocs.length === 0) {
+        html += `
+          <tr><td colspan="5">
+            <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+               <div class="bg-slate-50 p-4 rounded-full mb-3 dark:bg-slate-800">
+                 <i data-feather="file-text" class="w-8 h-8 opacity-50"></i>
+               </div>
+               <p class="text-sm font-medium">No invoices found.</p>
+            </div>
+          </td></tr>
+        `;
+    } else {
+        pageDocs.forEach(d => {
+        html += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <td class="p-3 font-medium text-slate-700 dark:text-slate-300">${d.invoiceNumber || "-"}</td>
+            <td class="p-3 text-slate-500 dark:text-slate-400">${d.invoiceDate || "-"}</td>
+            <td class="p-3 text-slate-600 dark:text-slate-300">${d.client?.name || "-"}</td>
+            <td class="p-3 text-right font-mono font-semibold text-slate-700 dark:text-slate-300">${d.total || "₹0.00"}</td>
+            <td class="p-3 text-center flex justify-center gap-2">
+                <button class="viewInvoiceBtn p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition" data-id="${d.id}" title="View"><i data-feather="eye" class="w-4 h-4"></i></button>
+                <button class="printInvoiceBtn p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" data-id="${d.id}" title="Print"><i data-feather="printer" class="w-4 h-4"></i></button>
+                <button class="deleteInvoiceBtn p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition" data-id="${d.id}" title="Delete"><i data-feather="trash-2" class="w-4 h-4"></i></button>
+            </td>
+            </tr>
+        `;
+        });
+    }
 
-    html += `
-        </tbody>
-      </table>
-      <div id="paginationControls" class="flex justify-center items-center gap-2 mt-4">
-        ${
-          totalPages > 1
-            ? `
-              <button ${currentPage === 1 ? "disabled" : ""} id="prevPageBtn" class="px-2 py-1 border rounded">Prev</button>
-              <span>Page ${currentPage} of ${totalPages}</span>
-              <button ${currentPage === totalPages ? "disabled" : ""} id="nextPageBtn" class="px-2 py-1 border rounded">Next</button>
-            `
-            : ""
-        }
-      </div>
-    `;
+    html += `</tbody></table>`;
+    
+    // Pagination Controls
+    if (totalPages > 1) {
+        html += `
+        <div class="flex justify-between items-center p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <button id="prevPageBtn" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 text-xs font-medium border rounded bg-white dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50">Prev</button>
+            <span class="text-xs text-slate-500">Page ${currentPage} of ${totalPages}</span>
+            <button id="nextPageBtn" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 text-xs font-medium border rounded bg-white dark:bg-slate-700 dark:border-slate-600 disabled:opacity-50">Next</button>
+        </div>
+        `;
+    }
 
     invoicesList.innerHTML = html;
-
     if (window.feather) feather.replace();
 
-    // Pagination event listeners
+    // Event Listeners
     document.getElementById("prevPageBtn")?.addEventListener("click", () => {
-      if (currentPage > 1) {
-        currentPage--;
-        renderInvoicesTable(allInvoicesDocs);
-      }
+        if(currentPage > 1) { currentPage--; renderInvoicesTable(allInvoicesDocs); }
     });
     document.getElementById("nextPageBtn")?.addEventListener("click", () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderInvoicesTable(allInvoicesDocs);
-      }
+        if(currentPage < totalPages) { currentPage++; renderInvoicesTable(allInvoicesDocs); }
     });
 
-    // Attach event listeners for view, print, delete
-    document.querySelectorAll(".viewInvoiceBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-id");
-        await showInvoiceDetails(id);
-      });
-    });
-    document.querySelectorAll(".printInvoiceBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-id");
-        await showInvoiceDetails(id, true);
+    // Actions
+    document.querySelectorAll(".viewInvoiceBtn").forEach(btn => btn.addEventListener("click", () => showInvoiceDetails(btn.dataset.id)));
+    document.querySelectorAll(".printInvoiceBtn").forEach(btn => btn.addEventListener("click", async () => {
+        await showInvoiceDetails(btn.dataset.id);
         setTimeout(() => window.print(), 500);
-      });
-    });
-    document.querySelectorAll(".deleteInvoiceBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-id");
-        if (confirm("Are you sure you want to delete this invoice?")) {
-          await deleteInvoice(id);
-        }
-      });
-    });
+    }));
+    document.querySelectorAll(".deleteInvoiceBtn").forEach(btn => btn.addEventListener("click", async () => {
+        if(confirm("Delete this invoice?")) deleteInvoice(btn.dataset.id);
+    }));
 
     // Sorting
-    document.getElementById("sortInvoicesBy")?.addEventListener("change", function() {
-      sortAndRenderInvoices();
-    });
+    document.getElementById("sortInvoicesBy")?.addEventListener("change", sortAndRenderInvoices);
   }
 
   function sortAndRenderInvoices() {
@@ -709,196 +629,132 @@ if (sameClient) {
     const sortVal = document.getElementById("sortInvoicesBy")?.value || "invoiceDate-desc";
 
     docs.sort((a, b) => {
-      switch (sortVal) {
-        case "invoiceNumber-asc":
-          return (a.invoiceNumber || "").localeCompare(b.invoiceNumber || "", undefined, { numeric: true });
-        case "invoiceNumber-desc":
-          return (b.invoiceNumber || "").localeCompare(a.invoiceNumber || "", undefined, { numeric: true });
-        case "invoiceDate-asc":
-          return (a.invoiceDate || "").localeCompare(b.invoiceDate || "");
-        case "invoiceDate-desc":
-          return (b.invoiceDate || "").localeCompare(a.invoiceDate || "");
-        case "client-asc":
-          return (a.client?.name || "").localeCompare(b.client?.name || "");
-        case "client-desc":
-          return (b.client?.name || "").localeCompare(a.client?.name || "");
-        case "total-asc":
-          return parseFloat((a.total || "0").replace(/[^\d.]/g, "")) - parseFloat((b.total || "0").replace(/[^\d.]/g, ""));
-        case "total-desc":
-          return parseFloat((b.total || "0").replace(/[^\d.]/g, "")) - parseFloat((a.total || "0").replace(/[^\d.]/g, ""));
-        default:
-          return 0;
-      }
+        if (sortVal === "invoiceDate-desc") return (b.invoiceDate || "").localeCompare(a.invoiceDate || "");
+        if (sortVal === "invoiceDate-asc") return (a.invoiceDate || "").localeCompare(b.invoiceDate || "");
+        if (sortVal === "total-desc") return parseFloat((b.total||"0").replace(/[^\d.]/g,"")) - parseFloat((a.total||"0").replace(/[^\d.]/g,""));
+        if (sortVal === "client-asc") return (a.client?.name||"").localeCompare(b.client?.name||"");
+        return 0;
     });
-
     renderInvoicesTable(docs);
-    if (document.getElementById("sortInvoicesBy")) document.getElementById("sortInvoicesBy").value = sortVal;
   }
 
   async function deleteInvoice(id) {
     try {
-      await db.collection("invoices").doc(id).delete();
-      notyf.success("Invoice deleted.");
-      loadAllInvoices();
-    } catch (err) {
-      notyf.error("Failed to delete invoice.");
-      console.error(err);
-    }
+        await db.collection("invoices").doc(id).delete();
+        notyf.success("Invoice deleted.");
+        loadAllInvoices();
+    } catch(e) { console.error(e); notyf.error("Error deleting invoice."); }
   }
 
- async function loadPendingDailyLogsForMonth(monthStr) {
-  const [year, month] = monthStr.split("-");
-  const startDate = `${year}-${month}-01`;
-  const endDate = new Date(parseInt(year, 10), parseInt(month, 10), 0);
-  const endDateStr = `${year}-${month}-${String(endDate.getDate()).padStart(2, "0")}`;
-
-  // Fetch logs for the month
-  const logsSnap = await db.collection("dailyLogs")
-    .where("date", ">=", startDate)
-    .where("date", "<=", endDateStr)
-    .get();
-
-  const logs = [];
-  logsSnap.forEach(doc => {
-    logs.push({ id: doc.id, ...doc.data() });
-  });
-
-  // Fetch all invoices once
-  const invSnap = await db.collection("invoices").get();
-  const invoicesByClient = {};
-  invSnap.forEach(doc => {
-    const d = doc.data();
-    const name = (d.client?.name || "").trim().toLowerCase();
-    if (!name) return;
-    if (!invoicesByClient[name]) invoicesByClient[name] = [];
-    invoicesByClient[name].push(d);
-  });
-
-  // Pending = logs whose client has no invoices (by name)
-  const pending = logs.filter(l => {
-    const key = (l.client || "").trim().toLowerCase();
-    return !(invoicesByClient[key] && invoicesByClient[key].length > 0);
-  });
-
-  const countEl = document.getElementById("pendingCount");
-  const listEl = document.getElementById("pendingList");
-  if (countEl) countEl.textContent = String(pending.length);
-  if (listEl) {
-    if (!pending.length) {
-      listEl.innerHTML = "<div class='text-gray-600'>No pending invoices for this month.</div>";
-    } else {
-      listEl.innerHTML = pending.map(p => `
-        <div class="flex items-center justify-between border rounded bg-white p-2 mb-1">
-          <div>
-            <div class="font-semibold">${p.client || ""}</div>
-            <div class="text-xs text-gray-600">${p.date}</div>
-          </div>
-          <button class="px-2 py-1 bg-orange-600 text-white rounded text-xs" data-id="${p.id}">Create</button>
-        </div>
-      `).join("");
-
-      listEl.querySelectorAll("button[data-id]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.id;
-          if (typeof window.createInvoiceFromDailyLog === "function") {
-            window.createInvoiceFromDailyLog(id);
-          } else {
-            (async () => {
-              const doc = await firebase.firestore().collection("dailyLogs").doc(id).get();
-              if (!doc.exists) return alert("Daily log not found.");
-              const d = doc.data();
-              localStorage.setItem("invoicePrefill", JSON.stringify({
-                dailyLogId: id,
-                client: d.client,
-                items: d.items,
-                date: d.date,
-                notes: d.notes,
-                total: d.totalRevenue,
-              }));
-              window.location.hash = "#invoicePrintArea";
-              setTimeout(() => {
-                if (typeof window.prefillInvoiceFromDailyLog === "function") {
-                  window.prefillInvoiceFromDailyLog();
-                }
-              }, 150);
-            })();
-          }
-        });
-      });
-    }
-  }
-}
-
-document.getElementById("openPendingList")?.addEventListener("click", async () => {
-  const listEl = document.getElementById("pendingList");
-  if (!listEl) return;
-  const isHidden = listEl.classList.toggle("hidden");
-  if (!isHidden) {
-    const monthStr = document.getElementById("filterMonthYear")?.value || new Date().toISOString().slice(0,7);
-    await loadPendingDailyLogsForMonth(monthStr);
-  }
-});
-
-// Trigger load when month filter changes and on initial load
-document.addEventListener("change", async function(e) {
-  if (e.target && e.target.id === "filterMonthYear") {
-    await loadPendingDailyLogsForMonth(e.target.value);
-  }
-});
-(async () => {
-  const initialMonth = document.getElementById("filterMonthYear")?.value || new Date().toISOString().slice(0,7);
-  await loadPendingDailyLogsForMonth(initialMonth);
-})();
-
-
+  // --- LOADING LOGIC ---
   function loadAllInvoices() {
-    const invoicesList = document.getElementById("invoicesList");
-    if (!invoicesList) return;
-    invoicesList.innerHTML = `
-  <div id="loadingOverlay" class="glass-loader flex flex-col items-center justify-center w-full h-32">
-    <div class="spinner mb-2"></div>
-    <span class="text-lg font-semibold text-gray-700">Loading...</span>
-  </div>
-`;
+    const list = document.getElementById("invoicesList");
+    if(!list) return;
+    
+    showLoading(true);
 
     let query = db.collection("invoices");
+    
+    // Date Filtering
     let filterMonthYear = document.getElementById("filterMonthYear")?.value;
     if (!filterMonthYear) {
       const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const year = now.getFullYear();
-      filterMonthYear = `${year}-${month}`;
-      if (document.getElementById("filterMonthYear")) document.getElementById("filterMonthYear").value = filterMonthYear;
+      filterMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      if(document.getElementById("filterMonthYear")) document.getElementById("filterMonthYear").value = filterMonthYear;
     }
-    const [filterYear, filterMonth] = filterMonthYear.split("-");
-    const start = `${filterYear}-${filterMonth}-01`;
-    const endDate = new Date(parseInt(filterYear), parseInt(filterMonth), 0);
-    const end = `${filterYear}-${filterMonth}-${String(endDate.getDate()).padStart(2, "0")}`;
+    const [y, m] = filterMonthYear.split("-");
+    const start = `${y}-${m}-01`;
+    const end = `${y}-${m}-${new Date(y, m, 0).getDate()}`;
+    
     query = query.where("invoiceDate", ">=", start).where("invoiceDate", "<=", end);
 
-    query.get()
-      .then(snapshot => {
-        if (snapshot.empty) {
-          invoicesList.innerHTML = "<p class='text-gray-500'>No invoices found.</p>";
-          allInvoicesDocs = [];
-          return;
-        }
-
-        let docs = [];
-        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-
-        allInvoicesDocs = docs;
+    query.get().then(snap => {
+        allInvoicesDocs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         sortAndRenderInvoices();
-      })
-      .catch(err => {
-        invoicesList.innerHTML = "<p class='text-red-500'>Failed to load invoices.</p>";
+    }).catch(err => {
         console.error(err);
-      });
+    }).finally(() => {
+        showLoading(false);
+    });
   }
 
-  async function showInvoiceDetails(invoiceId, silentPrint = false) {
-    const doc = await db.collection("invoices").doc(invoiceId).get();
-    if (!doc.exists) return alert("Invoice not found.");
+  // PENDING LOGS LOGIC (Orange Card)
+  async function loadPendingDailyLogsForMonth(monthStr) {
+    // ... (Existing logic, just styling the listItems) ...
+    const [year, month] = monthStr.split("-");
+    const startDate = `${year}-${month}-01`;
+    const endDateStr = `${year}-${month}-${new Date(year, month, 0).getDate()}`;
+
+    const logsSnap = await db.collection("dailyLogs").where("date", ">=", startDate).where("date", "<=", endDateStr).get();
+    const logs = logsSnap.docs.map(d => ({id:d.id, ...d.data()}));
+
+    const invSnap = await db.collection("invoices").get();
+    const clientHasInvoice = new Set();
+    invSnap.forEach(d => {
+        const n = (d.data().client?.name || "").trim().toLowerCase();
+        if(n) clientHasInvoice.add(n);
+    });
+
+    const pending = logs.filter(l => !clientHasInvoice.has((l.client||"").trim().toLowerCase()));
+    
+    const card = document.getElementById("pendingInvoicesCard");
+    const countEl = document.getElementById("pendingCount");
+    const listEl = document.getElementById("pendingList");
+    
+    if(pending.length > 0) {
+        card?.classList.remove("hidden");
+        if(countEl) countEl.textContent = pending.length;
+        if(listEl) {
+             listEl.innerHTML = pending.map(p => `
+                <div class="flex items-center justify-between p-2 bg-white dark:bg-slate-800 rounded border border-orange-100 dark:border-slate-700 shadow-sm">
+                    <div>
+                        <div class="font-bold text-slate-700 dark:text-slate-200">${p.client}</div>
+                        <div class="text-xs text-slate-500">${p.date} • ₹${p.totalRevenue}</div>
+                    </div>
+                    <button class="createFromPendingBtn px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition" data-id="${p.id}">Create</button>
+                </div>
+             `).join("");
+             
+             // Bind Click
+             listEl.querySelectorAll(".createFromPendingBtn").forEach(b => {
+                 b.addEventListener("click", async () => {
+                    const id = b.dataset.id;
+                    const doc = await db.collection("dailyLogs").doc(id).get();
+                    if(!doc.exists) return;
+                    const d = doc.data();
+                    
+                    // Prefill logic manually if window.prefill not avail
+                    document.getElementById("clientName").value = d.client;
+                    document.getElementById("invoiceDate").value = d.date;
+                    itemsBody.innerHTML = "";
+                    (d.items || []).forEach(i => addRow({ name: i.name, qty: i.qty, price: i.revenue, amount: (i.qty*i.revenue).toFixed(2) }));
+                    window.currentDailyLogIdForInvoice = id;
+                    document.getElementById("actualInvoicePaper").scrollIntoView({ behavior: 'smooth' });
+                 });
+             });
+        }
+    } else {
+        card?.classList.add("hidden");
+    }
+  }
+
+  // Pending Invoices Toggle
+  document.getElementById("openPendingList")?.addEventListener("click", () => {
+     document.getElementById("pendingList")?.classList.toggle("hidden");
+  });
+
+  document.addEventListener("change", (e) => {
+    if(e.target.id === "filterMonthYear") {
+        loadAllInvoices();
+        loadPendingDailyLogsForMonth(e.target.value);
+    }
+  });
+
+  // 8. SHOW / RESET
+  // ---------------
+  async function showInvoiceDetails(id) {
+    const doc = await db.collection("invoices").doc(id).get();
+    if (!doc.exists) return notyf.error("Invoice not found");
     const d = doc.data();
 
     document.getElementById("invoiceNumber").value = d.invoiceNumber || "";
@@ -909,23 +765,20 @@ document.addEventListener("change", async function(e) {
     document.getElementById("clientPhone").value = d.client?.phone || "";
     document.getElementById("clientEmail").value = d.client?.email || "";
     document.getElementById("invoiceNotes").value = d.notes || "";
-
+    
     itemsBody.innerHTML = "";
     (d.items || []).forEach(item => addRow(item));
     updateTotals();
-
-    if (silentPrint) {
-      setTimeout(() => window.print(), 500);
-    }
+    
+    // Scroll to top
+    document.getElementById("actualInvoicePaper").scrollIntoView({behavior: "smooth"});
   }
 
-  // --- NEW INVOICE FORM RESET ---
   function resetInvoiceForm() {
     document.getElementById("invoiceNumber").value = "";
-    const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
-    document.getElementById("invoiceDate").value = formattedDate;
-    document.getElementById("dueDate").value = formattedDate;
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("invoiceDate").value = today;
+    document.getElementById("dueDate").value = today;
     document.getElementById("clientName").value = "";
     document.getElementById("clientAddress").value = "";
     document.getElementById("clientPhone").value = "";
@@ -933,169 +786,93 @@ document.addEventListener("change", async function(e) {
     document.getElementById("invoiceNotes").value = "";
     itemsBody.innerHTML = "";
     addRow();
-    updateTotals();
+    window.currentDailyLogIdForInvoice = null;
   }
+  
+  document.getElementById("newInvoiceBtn")?.addEventListener("click", resetInvoiceForm);
+  document.getElementById("invoiceSearchBox")?.addEventListener("input", () => { currentPage = 1; renderInvoicesTable(allInvoicesDocs); });
 
-  document.addEventListener("click", function(e) {
-    if (e.target && e.target.id === "newInvoiceBtn") {
-      resetInvoiceForm();
-    }
-  });
-
-  // --- SEARCH BOX EVENT ---
-  document.addEventListener("input", function(e) {
-    if (e.target && e.target.id === "invoiceSearchBox") {
-      currentPage = 1;
-      renderInvoicesTable(allInvoicesDocs);
-    }
-  });
-
-  // --- FILTER FORM EVENTS ---
-  document.addEventListener("change", function(e) {
-    if (e.target && e.target.id === "filterMonthYear") {
-      loadAllInvoices();
-    }
-    if (e.target && e.target.id === "sortInvoicesBy") {
-      sortAndRenderInvoices();
-    }
-  });
-
-  // 8. INITIAL LOAD
-  // Set default value for month picker to current month
-  const monthInput = document.getElementById("filterMonthYear");
-  if (monthInput) {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
-    monthInput.value = `${year}-${month}`;
-  }
-
-  const today = new Date();
-  const formattedDate = today.toISOString().split("T")[0];
-  document.getElementById("invoiceDate").value = formattedDate;
-  document.getElementById("dueDate").value = formattedDate;
-
+  // INITIAL LOAD
+  // ------------
+  const initMonth = new Date().toISOString().slice(0, 7);
+  if(document.getElementById("filterMonthYear")) document.getElementById("filterMonthYear").value = initMonth;
+  resetInvoiceForm(); // Sets dates
   loadAllInvoices();
-});
-
-// --- CLIENT AUTOCOMPLETE ---
-let allClients = [];
-async function fetchClients() {
-  const snap = await firebase.firestore().collection("clients").get();
-  allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-}
-fetchClients();
+  loadPendingDailyLogsForMonth(initMonth);
 
 
-// Create dropdown element
-const clientNameInput = document.getElementById("clientName");
-const dropdown = document.createElement("div");
-dropdown.style.position = "absolute";
-dropdown.style.background = "#fff";
-dropdown.style.border = "1px solid #ccc";
-dropdown.style.zIndex = 1000;
-dropdown.style.display = "none";
-dropdown.className = "autocomplete-dropdown";
-clientNameInput.parentNode.appendChild(dropdown);
+  // --- AUTOCOMPLETE (Styled) ---
+  let allClients = [];
+  db.collection("clients").get().then(snap => {
+     allClients = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  });
 
-clientNameInput.addEventListener("input", function() {
-  const val = this.value.trim().toLowerCase();
-  if (!val) {
-    dropdown.style.display = "none";
-    return;
-  }
-  // Filter clients
-  const matches = allClients.filter(c => c.name && c.name.toLowerCase().startsWith(val));
-  if (matches.length === 0) {
-    dropdown.style.display = "none";
-    return;
-  }
-  // Show dropdown
-  dropdown.innerHTML = matches.map(c => `
-    <div class="autocomplete-item" style="padding:6px;cursor:pointer;" data-id="${c.id}">
-      <b>${c.name}</b> <span style="color:#888;">${c.contactPerson || ""}</span>
-    </div>
-  `).join("");
-  dropdown.style.display = "block";
-  dropdown.style.width = clientNameInput.offsetWidth + "px";
-});
+  const clientNameInput = document.getElementById("clientName");
+  const dropdown = document.createElement("div");
+  dropdown.className = "autocomplete-dropdown absolute bg-white dark:bg-slate-800 z-50 hidden border border-slate-200 dark:border-slate-700 shadow-lg max-h-48 overflow-y-auto";
+  clientNameInput.parentNode.appendChild(dropdown);
+  // Ensure parent is relative
+  clientNameInput.parentNode.style.position = "relative";
 
-// Handle selection
-dropdown.addEventListener("mousedown", async function(e) {
-  const item = e.target.closest(".autocomplete-item");
-  if (!item) return;
-  const client = allClients.find(c => c.id === item.dataset.id);
-  if (client) {
-    clientNameInput.value = client.name;
-    document.getElementById("clientAddress").value = client.address || "";
-    document.getElementById("clientPhone").value = client.phone || "";
-    document.getElementById("clientEmail").value = client.contactPerson || ""; // Or use a separate field for contact person
-    dropdown.style.display = "none";
+  clientNameInput.addEventListener("input", function() {
+    const val = this.value.trim().toLowerCase();
+    if (!val) { dropdown.style.display = "none"; return; }
+    
+    const matches = allClients.filter(c => c.name && c.name.toLowerCase().includes(val));
+    if (matches.length === 0) { dropdown.style.display = "none"; return; }
+    
+    dropdown.innerHTML = matches.map(c => `
+      <div class="p-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 text-sm text-slate-800 dark:text-slate-200" data-id="${c.id}">
+        <strong>${c.name}</strong> <span class="text-xs text-slate-500">${c.contactPerson || ""}</span>
+      </div>
+    `).join("");
+    
+    dropdown.style.display = "block";
+    dropdown.style.width = "100%";
+    dropdown.style.top = "100%";
+    dropdown.style.left = "0";
+  });
 
-    // --- Fetch and increment last invoice number for this client ---
-    try {
-      const invoiceSnap = await db.collection("invoices")
-        .where("client.name", "==", client.name)
-        .orderBy("createdAt", "desc")
-        .limit(1)
-        .get();
-      if (!invoiceSnap.empty) {
-        const lastInvoice = invoiceSnap.docs[0].data();
-        const lastInvoiceNo = lastInvoice.invoiceNumber || "";
-        const newInvoiceNo = incrementInvoiceNumber(lastInvoiceNo);
-        if (newInvoiceNo) {
-          document.getElementById("invoiceNumber").value = newInvoiceNo;
-        }
-      } else {
-        // If no previous invoice, generate first invoice number
-        // Use first two letters of client name as prefix, or customize as needed
-        const prefix = client.name
-          .split(" ")
-          .map(w => w[0])
-          .join("")
-          .toUpperCase();
-        document.getElementById("invoiceNumber").value = `${prefix}-01`;
+  dropdown.addEventListener("mousedown", async (e) => {
+      const item = e.target.closest("div[data-id]");
+      if(item) {
+          const client = allClients.find(c => c.id === item.dataset.id);
+          if(client) {
+              clientNameInput.value = client.name;
+              document.getElementById("clientAddress").value = client.address || "";
+              document.getElementById("clientPhone").value = client.phone || "";
+              // trigger blur to fetch last invoice
+              clientNameInput.dispatchEvent(new Event("blur"));
+          }
       }
-    } catch (err) {
-      console.error("Error fetching last invoice:", err);
-    }
-  }
+      dropdown.style.display = "none";
+  });
+  
+  clientNameInput.addEventListener("blur", () => setTimeout(() => dropdown.style.display = "none", 200));
+
+  // --- PREFILL GLOBAL ---
+  window.prefillInvoiceFromDailyLog = function() {
+    const prefill = JSON.parse(localStorage.getItem("invoicePrefill") || "{}");
+    if (!prefill.dailyLogId) return;
+
+    // Retry if DOM not ready
+    if (!document.getElementById("invoiceItems")) { setTimeout(window.prefillInvoiceFromDailyLog, 100); return; }
+
+    document.getElementById("clientName").value = prefill.client || "";
+    document.getElementById("invoiceDate").value = prefill.date || "";
+    document.getElementById("invoiceNotes").value = prefill.notes || "";
+    
+    itemsBody.innerHTML = "";
+    (prefill.items || []).forEach(item => addRow({
+        name: item.name,
+        qty: item.qty,
+        price: item.revenue,
+        amount: (item.qty * item.revenue).toFixed(2)
+    }));
+    
+    window.currentDailyLogIdForInvoice = prefill.dailyLogId;
+    localStorage.removeItem("invoicePrefill");
+    document.getElementById("actualInvoicePaper").scrollIntoView({ behavior: 'smooth' });
+  };
+
 });
-
-// Hide dropdown on blur
-clientNameInput.addEventListener("blur", function() {
-  setTimeout(() => { dropdown.style.display = "none"; }, 150);
-});
-// --- 0. Prefill invoice from dailyLog ---
-window.prefillInvoiceFromDailyLog = function() {
-  const prefill = JSON.parse(localStorage.getItem("invoicePrefill") || "{}");
-  if (!prefill.dailyLogId) return;
-
-  // If addRow or invoiceItems aren’t ready yet, retry shortly
-  if (typeof addRow !== "function" || !document.getElementById("invoiceItems")) {
-    setTimeout(window.prefillInvoiceFromDailyLog, 100);
-    return;
-  }
-
-  document.getElementById("clientName").value = prefill.client || "";
-  document.getElementById("invoiceDate").value = prefill.date || "";
-  document.getElementById("invoiceNotes").value = prefill.notes || "";
-
-  const itemsTbody = document.getElementById("invoiceItems");
-  itemsTbody.innerHTML = "";
-
-  (prefill.items || []).forEach(item => addRow({
-    name: item.name,
-    qty: item.qty,
-    price: item.revenue, // Use revenue as price for invoice
-    amount: (item.qty * item.revenue).toFixed(2)
-  }));
-
-  updateTotals();
-
-  window.currentDailyLogIdForInvoice = prefill.dailyLogId;
-  localStorage.removeItem("invoicePrefill");
-};
-
-
-

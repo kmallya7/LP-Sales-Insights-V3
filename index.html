@@ -1,687 +1,551 @@
-<!-- index.html (premium-light — preserves your original IDs & script links) -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <!-- ====== Meta & Favicon ====== -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LP Sales & Insights</title>
+  <title>flowr</title>
   <link rel="icon" type="image/png" href="assets/favicon_io/favicon.ico">
-  <!-- Notyf CSS & JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-
-  <!-- ====== Fonts ====== -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-
-  <!-- ====== Tailwind CSS (dev CDN) ====== -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- ====== External Libraries (leave as your project expects) ====== -->
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            slate: {
+              850: '#151F32',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-<script src="https://unpkg.com/feather-icons"></script>
-<script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  
 
-
-
-  <!-- ====== Visual polish (keeps your classes/IDs — only cosmetic) ====== -->
   <style>
-    :root{
-      --accent: #fdba74;
-      --muted: #6b7280;
-      --card-shadow: 0 10px 30px rgba(15,23,42,0.06);
-      --glass-bg: rgba(255,255,255,0.7);
+    :root {
+      --primary: #2563eb; 
+      --sidebar-width: 17rem;
+      --sidebar-width-collapsed: 5rem;
     }
-    html,body { height:100%; font-family: 'Poppins', sans-serif; }
+    
+    body { transition: background-color 0.3s ease, color 0.3s ease; }
 
-    /* Prevent sidebar nav text from wrapping */
-#sidebar .nav-link .sidebar-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-    /* overall subtle gradient behind app, but keep bg-gray-50 fallback */
-    body { background: linear-gradient(180deg,#ffffff 0%, #fbfbfd 45%, #fff6f0 100%); }
-
-    /* nav link premium active */
-    .nav-link.active {
-      background: #c8aff0f2; /* Light purple */
-      color: #1f2937;
-      border-left: 4px solid var(--accent);
-      font-weight: 600;
-      border-radius: 0.6rem;
-      box-shadow: 0 4px 18px rgba(253,186,116,0.09);
+    /* --- Sidebar Animation Logic --- */
+    #sidebar { 
+      transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
+      width: var(--sidebar-width); 
+      z-index: 50; 
+      white-space: nowrap; 
     }
-    .nav-link {
-  border-radius: 0.6rem; /* always rounded */
-  transition: background 200ms ease, color 200ms ease, transform 150ms ease;
-  color: #374151;
-}
-    .nav-link:hover {
-      transform: translateY(-2px);  /* subtle lift on hover */
-      background: #c8aff0f2; /* Light purple */
-      color: #111827;
+    
+    #sidebar.collapsed { width: var(--sidebar-width-collapsed); }
+
+    /* Hide horizontal scrollbar that appears during shrink */
+    #sidebar nav {
+        overflow-x: hidden; 
     }
-
-    /* glass-card utility */
-    .glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,255,255,0.80));
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  border: 1px solid rgba(255,255,255,0.85);
-  box-shadow: 0 4px 16px rgba(15,23,42,0.04);
-  border-radius: 12px;
-}
-
-
-
-
-    /* subtle micro-animations for sections */
-    .page-section { opacity:0; transform: translateY(8px); transition: opacity .36s ease, transform .36s ease; pointer-events:none; }
-    .page-section.show { opacity:1; transform: translateY(0); pointer-events:auto; }
-
-    /* loader */
-    #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:60; }
-
-    .sidebar-collapsed {
-  width: 4rem !important;
-  min-width: 4rem !important;
-  max-width: 4rem !important;
-  transition: width 220ms cubic-bezier(.4,0,.2,1);
-  overflow-x: hidden;
-}
-.sidebar-collapsed .sidebar-label {
-  opacity: 0;
-  width: 0;
-  padding: 0 !important;
-  margin: 0 !important;
-  pointer-events: none;
-  transition: opacity 180ms cubic-bezier(.4,0,.2,1);
-  display: inline-block !important;
-}
-#sidebar {
-  transition: width 220ms cubic-bezier(.4,0,.2,1);
-}
-#sidebar .nav-link {
-  transition: padding 220ms cubic-bezier(.4,0,.2,1), background 200ms, color 200ms, transform 150ms;
-}
-.sidebar-collapsed .nav-link {
-  justify-content: center;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  text-align: center;
-}
-
-    /* print styles: keep original rules working */
-    @media print {
-      body * { visibility: hidden; }
-      #invoicePrintArea, #invoicePrintArea * { visibility: visible; }
-      aside, .nav-link, .bg-white.shadow-sm.border-b,
-      #addItemBtn, .deleteBtn, button[onclick="printInvoice()"] { display: none !important; }
+    #sidebar.collapsed nav::-webkit-scrollbar {
+        display: none; /* Clean look when collapsed */
+    }
+    
+    /* --- Top Logo Centering --- */
+    .sidebar-header {
+        transition: padding 0.3s ease, justify-content 0.3s ease;
+        padding-left: 1.5rem; /* px-6 equivalent */
+        padding-right: 1.5rem;
+    }
+    
+    /* When collapsed: Remove padding and Center the logo content */
+    #sidebar.collapsed .sidebar-header {
+        padding-left: 0;
+        padding-right: 0;
+        justify-content: center;
     }
 
-    /* responsive tweaks */
+    /* --- Smooth Text Hiding --- */
+    .sidebar-label { 
+      opacity: 1;
+      width: auto;
+      margin-left: 0.75rem; 
+      transition: opacity 0.2s ease, width 0.3s ease, margin 0.3s ease;
+      display: block;
+    }
+    
+    .group-heading {
+        opacity: 1;
+        transition: opacity 0.2s ease;
+        white-space: nowrap;
+        padding-left: 0.75rem; /* Align with links */
+    }
+
+    /* Collapse State: Text */
+    #sidebar.collapsed .sidebar-label { 
+      opacity: 0; 
+      width: 0;
+      margin-left: 0; 
+      pointer-events: none;
+      overflow: hidden; 
+    }
+    
+    #sidebar.collapsed .group-heading {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Collapse State: Dark Mode Toggle - HIDDEN AS REQUESTED */
+    #sidebar.collapsed #darkModeToggle {
+      display: none !important;
+    }
+    
+    /* --- Nav Icons Centering --- */
+    .nav-link { 
+      display: flex; 
+      align-items: center; 
+      border-radius: 0.75rem; 
+      transition: all 0.2s ease-in-out; 
+      font-weight: 500; 
+      margin-bottom: 0.25rem; 
+      color: #64748b; 
+      
+      /* Standard Padding */
+      padding: 0.75rem 0.75rem 0.75rem 1.5rem; /* top right bottom left */
+    }
+    
+    /* When Collapsed: Perfect Center */
+    #sidebar.collapsed .nav-link { 
+        padding-left: 0;
+        padding-right: 0;
+        justify-content: center; /* Flex center usually works best here */
+    }
+    
+    #sidebar.collapsed .nav-icon { margin-right: 0; }
+
+    /* Hover States */
+    .nav-link:hover { 
+      background-color: #e2e8f0; 
+      color: #0f172a; 
+    }
+    .dark .nav-link:hover {
+      background-color: #334155; 
+      color: #ffffff;
+    }
+
+    .nav-link.active { 
+      background-color: #eff6ff; 
+      color: var(--primary); 
+      font-weight: 600; 
+    }
+    .dark .nav-link.active {
+      background-color: #1e3a8a; 
+      color: #93c5fd; 
+    }
+
+    .nav-icon { width: 20px; height: 20px; flex-shrink: 0; transition: all 0.3s ease; }
+
+    /* Main Content Slide */
+    main { transition: padding-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+
+    /* Helpers */
+    .page-section { display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; }
+    .page-section.show { display: block; opacity: 1; transform: translateY(0); }
+    .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
+    .dark .glass { background: rgba(15, 23, 42, 0.90); border: 1px solid rgba(255,255,255,0.1); }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
     @media (max-width: 768px) {
-      #sidebar { transform: translateX(-100%); position:fixed; z-index:40; height:100vh; }
+      #sidebar { position: fixed; transform: translateX(-100%); }
       #sidebar.open { transform: translateX(0); }
-      #sidebarToggle { display:block !important; }
-    }
-    @media (min-width: 769px) {
-      #sidebarToggle { display:none !important; }
     }
 
-    /* signature font helper */
-    .font-signature { font-family: 'Great Vibes', cursive; }
+    /* --- NEW ANIMATIONS (Blobs, Login, Splash) --- */
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob { animation: blob 7s infinite; }
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+    
+    .login-glass {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    }
+    .dark .login-glass {
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
 
-    /* top greeting smaller */
-    #greetingText { font-weight:600; color:var(--muted); }
+    /* Splash Screen Animations */
+    @keyframes breath {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-breath { animation: breath 3s ease-in-out infinite; }
 
-    /* small utility for subtle card hover */
-    .card-hover:hover { transform: translateY(-4px); transition: transform 180ms ease; }
+    @keyframes progress {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-progress { animation: progress 1.5s ease-in-out infinite; }
 
-    /* Glassmorph background image effect */
-#glass-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  width: 100vw;
-  height: 100vh;
-  background: url('assets/Backgrounds/BG 4.png') center/cover no-repeat;
-
-  background-color: #fff6f0;
-}
-
-#glass-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.70);
-  backdrop-filter: blur(4px) saturate(120%);
-  -webkit-backdrop-filter: blur(4px) saturate(120%);
-  pointer-events: none;
-}
-
+    .loader-hidden { opacity: 0; pointer-events: none; }
   </style>
 
-  <!-- ====== Success Sound ====== -->
   <audio id="successSound" src="assets/ding.wav" preload="auto"></audio>
 </head>
-<body class="bg-gray-50">
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased">
 
-  <!-- ====== Glassmorph Background ====== -->
-  <div id="glass-bg"></div>
-
-  <!-- ================= SIGN IN PAGE OVERLAY ================= -->
-  <div id="signInPage" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 to-pink-100">
-    <div class="glass max-w-md w-full rounded-2xl px-7 py-10 flex flex-col items-center">
-      <img src="assets/LP Logo.png" alt="Lush Patisserie" class="mb-5 h-20 w-20 rounded-full shadow" />
-      <h1 class="text-3xl font-bold text-center text-gray-900 mb-1">Welcome to Lush Patisserie</h1>
-      <p class="text-sm text-gray-600 mb-6 text-center">Sign in to access your sales, insights, and more.</p>
-
-      <button id="signInGoogleBtn"
-        class="flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow transition">
-        <!-- Google Icon SVG (kept inline for compatibility) -->
-        <svg class="w-6 h-6" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><g><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.7 33.1 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.5 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.1-2.7-.3-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.5 16.1 19.4 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.5 5.1 29.6 3 24 3c-7.2 0-13.4 3.1-17.7 8.1z"/><path fill="#FBBC05" d="M24 45c5.6 0 10.5-1.9 14.3-5.1l-6.6-5.4C29.7 36.9 27 38 24 38c-6.1 0-10.7-2.9-13.7-7.1l-7 5.4C6.6 41.9 14.1 45 24 45z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-1.1 3.1-4.1 5.5-7.7 5.5-4.6 0-8.4-3.8-8.4-8.5s3.8-8.5 8.4-8.5c2.5 0 4.7.9 6.3 2.4l6.4-6.4C38.1 7.1 31.5 4 24 4c-10.5 0-19 8.5-19 19s8.5 19 19 19c10.5 0 19-8.5 19-19 0-1.3-.1-2.7-.3-4z"/></g></svg>
-        Sign in with Google
-      </button>
-    </div>
-    <div class="mt-8 text-gray-400 text-xs">© 2025 Lush Patisserie</div>
-  </div>
-
-  <!-- ================= LOADER (SPINNER) ================= -->
-  <div id="loader">
-    <svg class="animate-spin h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-    </svg>
-  </div>
-
-  <!-- ================= GREETING BAR (TOP) ================= -->
-  <div class="w-full flex justify-end items-center px-6 py-3 bg-white shadow-sm border-b">
-    <p id="greetingText" class="text-sm text-gray-600 font-medium"></p>
-  </div>
-
-  <!-- ================= SIDEBAR NAVIGATION ================= -->
-  <aside id="sidebar" style="background-color: #F7F5F2;" class="w-64 border-r border-orange-100 shadow-md p-4 flex flex-col h-screen fixed left-0 top-0 bottom-0 transition-all duration-300 overflow-y-auto z-40">
+  <div id="globalLoader" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-3xl transition-opacity duration-700 ease-out">
     
-    <!-- Sidebar Overlay for Mobile -->
-<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-30 z-30 hidden md:hidden"></div>
+    <div class="absolute top-1/3 left-1/4 w-96 h-96 bg-blue-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+    <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-400/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
 
-    
-    <!-- ====== Brand Logo & Sidebar Toggle ====== -->
-    <div class="flex items-center space-x-2 mb-6 p-4">
-      <button id="sidebarToggle" class="md:hidden text-2xl focus:outline-none" aria-label="Toggle sidebar">☰</button>
-      <img id="brandLogo" src="assets/LP Logo.png" alt="Lush Patisserie" class="h-14 w-14 rounded-full bg-gray-100" />
-      <div class="sidebar-label">
-        <h2 class="text-xl font-bold text-gray-900">Lush Patisserie</h2>
-        <p class="text-sm text-gray-900">Sales & Insights</p>
+    <div class="relative flex flex-col items-center">
+      <div class="relative mb-6">
+        <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+        <img src="assets/Flowr Logo.png" alt="Loading..." class="relative h-24 w-24 rounded-full shadow-2xl animate-breath" />
+      </div>
+
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">flowr</h1>
+      
+      <div class="h-1 w-32 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div class="h-full bg-blue-600 rounded-full animate-progress"></div>
       </div>
     </div>
-    <!-- ====== Navigation Links ====== -->
-    <nav id="sidebarNav" class="flex-1 px-4 space-y-1 overflow-y-auto">
-      <!-- OPERATIONS HEADING -->
-       <hr class="my-4 border-t border-gray-300" />
-      <div class="sidebar-label uppercase font-bold text-xs text-gray-400 mt-8 mb-4 tracking-widest">Operations</div>
-      <!-- Each nav-link below is a section in the app -->
-      <a href="#workLog" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Work Log">
-        <!-- Icon SVG -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-        </svg>
-        <span class="sidebar-label">Work Log</span>
-      </a>
-    
-      <a href="#dashboard" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Dashboard">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-        </svg>
-        <span class="sidebar-label">Dashboard</span>
-      </a>
-      <a href="#recipeCalculator" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Recipe Calculator">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z" />
-  </svg>
-  <span class="sidebar-label">Recipe Calculator</span>
-</a>
+  </div>
 
-      <a href="#invoice" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Invoice">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+  <div id="signInPage" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-50 dark:bg-slate-950 overflow-hidden" style="display:none;">
+    <div class="absolute top-0 -left-4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob dark:opacity-10"></div>
+    <div class="absolute top-0 -right-4 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 dark:opacity-10"></div>
+    <div class="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000 dark:opacity-10"></div>
+
+    <div class="login-glass relative max-w-md w-full mx-6 rounded-3xl p-10 flex flex-col items-center text-center transform transition-all">
+      <div class="mb-8 relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+        <img src="assets/Flowr Logo.png" alt="Flowr Logo" class="relative h-40 w-40 rounded-full shadow-2xl bg-white object-cover ring-4 ring-white dark:ring-slate-800" />
+      </div>
+
+      <div class="space-y-2 mb-10">
+        <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">flowr</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-lg font-medium">Pastry Management Simplified</p>
+      </div>
+
+      <button id="signInGoogleBtn" class="w-full group relative flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 px-8 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+        <svg class="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        <span class="sidebar-label">Invoice</span>
+        <span>Sign in with Google</span>
+      </button>
+
+      <p class="mt-8 text-xs text-slate-400">
+        Secure access for authorized staff only.
+      </p>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-screen fixed left-0 top-0 flex flex-col overflow-hidden shadow-sm z-50">
+    <div class="sidebar-header flex items-center h-20 border-b border-slate-100 dark:border-slate-800 shrink-0 transition-colors">
+      <img src="assets/Flowr Logo.png" alt="Logo" class="h-9 w-9 rounded-full bg-slate-100 object-cover shrink-0 ring-2 ring-white dark:ring-slate-700" />
+      <div class="sidebar-label ml-3 overflow-hidden">
+        <h2 class="text-sm font-bold text-slate-800 dark:text-white">flowr</h2>
+        <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">Pastry Management</p>
+      </div>
+      <button id="closeSidebarMobile" class="ml-auto md:hidden text-slate-400 dark:text-slate-500"><i data-feather="x"></i></button>
+    </div>
+
+    <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+      <a href="#home" class="nav-link group" data-tooltip="Home">
+        <i data-feather="home" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Home</span>
       </a>
-      <a href="#payments" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Payments">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-        </svg>
-        <span class="sidebar-label">Payments</span>
+      <div class="group-heading px-3 mb-2 mt-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operations</div>
+      <a href="#workLog" class="nav-link group" data-tooltip="Work Log">
+        <i data-feather="edit-3" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Work Log</span>
       </a>
-      <a href="#orders" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Orders">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-        </svg>
-        <span class="sidebar-label">Orders</span>
+      <a href="#dashboard" class="nav-link group" data-tooltip="Dashboard">
+        <i data-feather="pie-chart" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Dashboard</span>
       </a>
-      <hr class="my-4 border-t border-gray-300" />
-      <!-- MANAGEMENT HEADING -->
-      <div class="sidebar-label uppercase font-bold text-xs text-gray-400 mt-8 mb-4 tracking-widest">Management</div>
-      <a href="#inventory" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Inventory">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+      <a href="#recipeCalculator" class="nav-link group" data-tooltip="Recipe Calculator">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path>
         </svg>
-        <span class="sidebar-label">Inventory</span>
+        <span class="sidebar-label text-sm">Recipe Calculator</span>
       </a>
-      <a href="#clients" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Clients">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-        </svg>
-        <span class="sidebar-label">Clients</span>
+      <a href="#invoice" class="nav-link group" data-tooltip="Invoice">
+        <i data-feather="file-text" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Invoice</span>
       </a>
-      <a href="#fixedExpenses" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Fixed Expenses">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 8.25H9m6 3H9m3 6-3-3h1.5a3 3 0 1 0 0-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-        </svg>
-        <span class="sidebar-label">Fixed Expenses</span>
+      <a href="#payments" class="nav-link group" data-tooltip="Payments">
+        <i data-feather="credit-card" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Payments</span>
       </a>
-      <a href="#export" class="nav-link flex items-center gap-2 text-gray-700 px-3 py-2 group" data-tooltip="Export">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
-        </svg>
-        <span class="sidebar-label">Export</span>
+      <a href="#orders" class="nav-link group" data-tooltip="Orders">
+        <i data-feather="shopping-bag" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Orders</span>
+      </a>
+      <div class="my-4 border-t border-slate-100 dark:border-slate-800"></div>
+      <div class="group-heading px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Management</div>
+      <a href="#inventory" class="nav-link group" data-tooltip="Inventory">
+        <i data-feather="package" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Inventory</span>
+      </a>
+      <a href="#clients" class="nav-link group" data-tooltip="Clients">
+        <i data-feather="users" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Clients</span>
+      </a>
+      <a href="#fixedExpenses" class="nav-link group" data-tooltip="Fixed Expenses">
+        <i data-feather="dollar-sign" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Fixed Expenses</span>
+      </a>
+      <a href="#export" class="nav-link group" data-tooltip="Export">
+        <i data-feather="upload-cloud" class="nav-icon"></i>
+        <span class="sidebar-label text-sm">Export</span>
       </a>
     </nav>
 
-    <!-- ====== Quick Add Button (Floating) ====== -->
-<button id="quickAddBtn" class="fixed bottom-8 left-1/2 md:left-72 transform -translate-x-1/2 md:translate-x-0 z-50 bg-orange-600 text-white rounded-full shadow-lg w-12 h-12 flex items-center justify-center text-3xl hover:bg-orange-700 transition-all duration-200" title="Quick Add" style="display:none;">+</button>
-
-    <!-- ====== User Info & Logout ====== -->
-    <div id="userInfo" class="hidden items-center gap-2 p-4">
-      <img id="userPhoto" class="h-8 w-8 rounded-full" src="" alt="User" />
-      <span id="userName" class="text-sm font-medium"></span>
-      <button id="logoutBtn" class="bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300">Logout</button>
+    <div class="border-t border-slate-100 dark:border-slate-800 p-4">
+      <div id="userInfo" class="flex items-center gap-3 mb-4 hidden">
+        <img id="userPhoto" class="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700" src="" />
+        <div class="sidebar-label overflow-hidden">
+          <p id="userName" class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">User</p>
+          <button id="logoutBtn" class="text-xs text-red-500 hover:text-red-600 font-medium">Sign Out</button>
+        </div>
+      </div>
+      
+      <div class="flex gap-2">
+        <button id="toggleSidebarBtn" class="hidden md:flex flex-1 items-center justify-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+          <i data-feather="chevron-left" id="toggleIcon"></i>
+        </button>
+        
+        <button id="darkModeToggle" class="flex items-center justify-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 transition-colors" title="Toggle Dark Mode">
+          <i data-feather="moon" id="themeIcon"></i>
+        </button>
+      </div>
     </div>
   </aside>
 
-  <!-- ================= AUTH SECTION (Header) ================= -->
-  <div id="authSection" class="flex items-center gap-2 ml-auto mb-4">
-    <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign in with Google</button>
-  </div>
+  <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden glass"></div>
 
-  <!-- ================= MAIN CONTENT ================= -->
-  <main class="md:pl-64 min-h-screen flex flex-col bg-gray-50">
-    <!-- ====== Work Log Section (Batch Calculator & Daily Logs) ====== -->
-    <div id="workLog" class="page-section w-full flex justify-center show">
-      <div class="flex flex-col gap-8 w-full max-w-full px-2 md:px-8 py-6 md:py-10">
+  <main id="mainContent" class="md:pl-[17rem] min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-all duration-300">
+    <header class="h-16 flex items-center justify-between px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200/60 dark:border-slate-800/60">
+      <div class="flex items-center gap-4">
+        <button id="sidebarToggleMobile" class="md:hidden p-2 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i data-feather="menu"></i></button>
+        <p id="greetingText" class="text-sm font-medium text-slate-500 dark:text-slate-400">Welcome</p>
+      </div>
+      <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">Sign In</button>
+    </header>
 
-        <!-- ====== Batch Calculator ====== -->
-        <section id="batchCalculator" class="flex-1 min-w-0 w-full glass rounded-xl p-2 sm:p-4 md:p-10 mb-8 lg:mb-0">
+    <div class="p-4 md:p-8 w-full max-w-[1400px] mx-auto text-slate-800 dark:text-slate-200">
+      
+      <div id="home" class="page-section">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 md:p-12 shadow-2xl mb-10">
+          <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+          <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-pink-500 opacity-20 rounded-full blur-3xl"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-4 mb-4 opacity-80">
+              <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-white/10">Lush Patisserie Management</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+              <span id="heroGreeting">Hello</span>, <span id="heroName">Chef</span>!
+            </h1>
+            <p class="text-lg md:text-xl text-blue-100 max-w-2xl leading-relaxed">
+              Ready to craft some magic today? Select a module below to manage your recipes, track orders, or calculate costs.
+            </p>
+          </div>
+        </div>
 
-          <h2 class="text-2xl font-bold mb-4 text-orange-700">Batch Calculator</h2>
-          <form class="space-y-8">
-            <div>
-              <label class="block text-lg font-medium mb-2" for="costPerUnit">Cost per Unit (₹)</label>
-              <input id="costPerUnit" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div onclick="showSection('workLog')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1">
+            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+              <i data-feather="edit-3"></i>
             </div>
-            <div>
-              <label class="block text-lg font-medium mb-2" for="sellingPrice">Selling Price per Unit (₹)</label>
-              <input id="sellingPrice" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Daily Work Log</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Track production batches and log daily kitchen activities.</p>
+          </div>
+          <div onclick="showSection('recipeCalculator')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1">
+            <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path>
+              </svg>
             </div>
-            <div>
-              <label class="block text-lg font-medium mb-2" for="quantity">Quantity per Batch</label>
-              <input id="quantity" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Recipe Calculator</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Calculate ingredient costs and set profit margins instantly.</p>
+          </div>
+          <div onclick="showSection('orders')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1">
+            <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
+              <i data-feather="shopping-bag"></i>
             </div>
-            <div class="flex gap-4 mt-4 flex-col md:flex-row">
-              <button type="button" class="flex-1 bg-orange-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-orange-700 transition">Calculate & Save</button>
-              <button type="reset" class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg text-lg font-semibold hover:bg-gray-300 transition">Reset</button>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Manage Orders</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">View active orders and track fulfillment status.</p>
+          </div>
+           <div onclick="showSection('invoice')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all duration-300 hover:-translate-y-1">
+            <div class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4 group-hover:scale-110 transition-transform">
+              <i data-feather="file-text"></i>
             </div>
-          </form>
-          <!-- ====== Batch Calculator Results ====== -->
-          <div class="mt-10 space-y-4">
-            <div class="flex justify-between text-lg">
-              <span>Total Revenue:</span>
-              <span id="totalRevenue" class="font-semibold text-orange-700">₹0.00</span>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Generate Invoice</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Create professional invoices for your clients.</p>
+          </div>
+        </div>
+      </div>
+      <div id="workLog" class="page-section">
+        <div id="batchCalculator"></div> 
+        <div id="dailyLog" class="mt-8"></div>
+      </div>
+      <div id="dashboard" class="page-section"></div>
+      <div id="recipeCalculator" class="page-section">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+             <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+               <i data-feather="database" class="w-5 h-5 text-blue-500"></i> Ingredients
+             </h2>
+             <form id="addEditIngredientForm" class="space-y-4 mb-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+               <h3 id="ingredientFormTitle" class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase">Add Ingredient</h3>
+               <input type="text" id="ingredientName" placeholder="Name (e.g. Flour)" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white" required>
+               <div class="grid grid-cols-3 gap-2">
+                 <input type="number" id="ingredientSize" placeholder="Size" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white" required>
+                 <select id="ingredientUnit" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white">
+                   <option value="g">g</option>
+                   <option value="kg">kg</option>
+                   <option value="ml">ml</option>
+                   <option value="L">L</option>
+                 </select>
+                 <input type="number" id="ingredientCost" placeholder="Cost (₹)" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white" required>
+               </div>
+               <div class="flex gap-2">
+                 <button type="submit" id="ingredientFormBtn" class="flex-1 bg-slate-800 dark:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-900 dark:hover:bg-blue-700">Add</button>
+                 <button type="button" id="cancelEditBtn" class="hidden flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-white py-2 rounded-lg text-sm font-medium">Cancel</button>
+               </div>
+             </form>
+             <div class="overflow-auto max-h-96 border dark:border-slate-800 rounded-lg">
+               <table class="w-full text-sm text-left">
+                 <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold sticky top-0">
+                   <tr>
+                     <th class="p-2">Name</th>
+                     <th class="p-2">Size</th>
+                     <th class="p-2">Unit</th>
+                     <th class="p-2">₹</th>
+                     <th class="p-2">Action</th>
+                   </tr>
+                 </thead>
+                 <tbody id="ingredientsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+               </table>
+             </div>
+          </div>
+          <div class="lg:col-span-7 space-y-6">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+              <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                <i data-feather="cpu" class="w-5 h-5 text-indigo-500"></i> Calculator
+              </h2>
+              <form id="recipeForm" class="flex flex-wrap gap-2 items-end mb-4 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                 <div class="flex-1 min-w-[140px]">
+                   <label class="text-xs font-bold text-slate-400">Ingredient</label>
+                   <select id="ingredientSelect" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white"></select>
+                 </div>
+                 <div class="w-24">
+                   <label class="text-xs font-bold text-slate-400">Amount</label>
+                   <input type="number" id="usedAmount" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white" placeholder="0">
+                 </div>
+                 <div class="w-24">
+                    <label class="text-xs font-bold text-slate-400">Unit</label>
+                    <select id="usedUnit" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm dark:text-white"><option>Unit</option></select>
+                 </div>
+                 <button type="button" id="calcBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">Add</button>
+              </form>
+              <table class="w-full text-sm mb-4 border dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-200">
+                  <tr>
+                    <th class="p-2 text-left">Ingredient</th>
+                    <th class="p-2">Qty</th>
+                    <th class="p-2">Unit</th>
+                    <th class="p-2">Cost</th>
+                    <th class="p-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="costTableBody" class="divide-y divide-indigo-50 dark:divide-indigo-900/20"></tbody>
+              </table>
+              <div class="flex justify-between items-center">
+                 <button type="button" id="resetCalcBtn" class="text-sm text-red-500 hover:text-red-700">Reset All</button>
+                 <div id="calcSummaryTotal" class="text-right"></div>
+              </div>
             </div>
-            <div class="flex justify-between text-lg">
-              <span>Total Cost:</span>
-              <span id="totalCost" class="font-semibold text-orange-700">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-lg">
-              <span>Gross Profit:</span>
-              <span id="grossProfit" class="font-semibold text-orange-700">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-lg">
-              <span>Profit Margin:</span>
-              <span id="profitMargin" class="font-semibold text-orange-700">0.00%</span>
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+              <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Overheads & Profit</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                 <div><label class="text-xs font-bold text-slate-400">Labour (₹)</label><input type="number" id="labourCost" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded text-sm dark:text-white" value="0"></div>
+                 <div><label class="text-xs font-bold text-slate-400">Maintenance (₹)</label><input type="number" id="maintenanceCost" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded text-sm dark:text-white" value="0"></div>
+                 <div><label class="text-xs font-bold text-slate-400">Licensing (₹)</label><input type="number" id="licensingCost" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded text-sm dark:text-white" value="0"></div>
+                 <div><label class="text-xs font-bold text-slate-400">Packaging (₹)</label><input type="number" id="packagingCost" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded text-sm dark:text-white" value="0"></div>
+                 <div><label class="text-xs font-bold text-slate-400">Electricity (₹)</label><input type="number" id="electricityCost" class="w-full p-2 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 rounded text-sm dark:text-white" value="0"></div>
+                 <div><label class="text-xs font-bold text-slate-400">Profit Margin (%)</label><input type="number" id="profitPercent" class="w-full p-2 border rounded text-sm bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-100" value="20"></div>
+              </div>
+              <div class="flex gap-3 mb-4">
+                 <button id="calcFinalBtn" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 dark:shadow-none">Calculate Final Price</button>
+                 <button id="resetFinalBtn" class="px-4 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600">Clear</button>
+              </div>
+              <div id="finalSummary" class="text-center"></div>
             </div>
           </div>
-          <!-- ====== Common Batches List ====== -->
-          <div class="mt-12">
-            <h3 class="text-lg font-semibold mb-4 text-orange-600">Common Batches</h3>
-            <div class="space-y-4">
-              <!-- Example Batch 1 -->
-              <div class="flex items-center justify-between bg-orange-50 rounded-lg px-5 py-4">
-                <div>
-                  <div class="font-bold">Lassi Shop</div>
-                  <div class="text-base text-gray-600">Cost: ₹30 | Price: ₹45 | Qty: 12</div>
-                </div>
-                <div class="flex gap-2">
-                  <button class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 text-sm">Apply</button>
-                  <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">Delete</button>
-                </div>
-              </div>
-              <!-- Example Batch 2 -->
-              <div class="flex items-center justify-between bg-orange-50 rounded-lg px-5 py-4">
-                <div>
-                  <div class="font-bold">GK - 36 Brownie</div>
-                  <div class="text-base text-gray-600">Cost: ₹30 | Price: ₹45 | Qty: 36</div>
-                </div>
-                <div class="flex gap-2">
-                  <button class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 text-sm">Apply</button>
-                  <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ====== Daily Logs Section ====== -->
-        <section id="dailyLog" class="flex-1 min-w-0 w-full glass rounded-xl p-2 sm:p-4 md:p-10 space-y-6">
-
-          <h2 class="text-xl sm:text-2xl md:text-4xl font-extrabold mb-6 text-orange-800 tracking-tight">Daily Logs</h2>
-
-          <form class="space-y-8">
-            <div>
-              <label class="block text-lg font-medium mb-2" for="logDate">Date</label>
-              <input id="logDate" type="date" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" value="2025-06-20" />
-            </div>
-            <div class="flex flex-col md:flex-row gap-6">
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="clientName">Client/Order Name</label>
-                <input id="clientName" type="text" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="item">Item</label>
-                <input id="item" type="text" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-            </div>
-            <div class="flex flex-col md:flex-row gap-6">
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="itemQty">Quantity</label>
-                <input id="itemQty" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="revenue">Revenue (₹)</label>
-                <input id="revenue" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="ingredients">Ingredients (₹)</label>
-                <input id="ingredients" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-lg font-medium mb-2" for="packaging">Packaging (₹)</label>
-                <input id="packaging" type="number" class="w-full px-3 py-3 md:px-5 md:py-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-orange-400" />
-              </div>
-            </div>
-            <div class="flex gap-4 mt-4 flex-col md:flex-row">
-              <button type="button" class="flex-1 bg-orange-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-orange-700 transition">+ Add Item</button>
-              <button type="button" class="flex-1 bg-orange-100 text-orange-700 py-4 rounded-lg text-lg font-semibold hover:bg-orange-200 transition">Show Notes</button>
-            </div>
-          </form>
-
-          <!-- ====== Daily Log Totals ====== -->
-          <div class="mt-10">
-            <div class="flex justify-between text-lg mb-2">
-              <span>Total Revenue:</span>
-              <span id="totalRevenueLog" class="font-semibold text-orange-700">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-lg mb-2">
-              <span>Total Cost:</span>
-              <span id="totalCostLog" class="font-semibold text-amber-600">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-lg mb-2">
-              <span>Total Profit:</span>
-              <span id="totalProfitLog" class="font-semibold text-green-600">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-lg mb-2">
-              <span>Calculated Profit:</span>
-              <span id="calculatedProfit" class="font-semibold text-orange-700">₹0.00</span>
-            </div>
-            <div class="text-gray-500 text-base mt-4">
-              <strong>Entries for 2025-06-20:</strong> No entries found for this date.
-            </div>
-          </div>
-
-          <!-- ====== Daily Log Action Buttons ====== -->
-          <div class="flex gap-4 mt-4 flex-col md:flex-row">
-            <button type="button" class="flex-1 bg-orange-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-orange-700 transition">+ Add Item</button>
-            <button type="button" class="flex-1 border-2 border-orange-600 text-orange-700 bg-white py-4 rounded-lg text-lg font-semibold hover:bg-orange-50 transition">Calculated Profit</button>
-          </div>
-        </section>
+        </div>
+      </div>
+      <div id="invoice" class="page-section">
+        <div id="invoicePrintArea"></div>
+      </div>
+      <div id="payments" class="page-section"></div>
+      <div id="orders" class="page-section"></div>
+      <div id="inventory" class="page-section"></div>
+      <div id="clients" class="page-section"></div>
+      <div id="fixedExpenses" class="page-section">
+        <div class="p-12 text-center text-slate-400">
+          <i data-feather="dollar-sign" class="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600"></i>
+          <h2 class="text-lg font-semibold">Fixed Expenses Module</h2>
+          <p>Coming Soon</p>
+        </div>
+      </div>
+      <div id="export" class="page-section">
+        <div class="p-12 text-center text-slate-400">
+          <i data-feather="upload-cloud" class="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600"></i>
+          <h2 class="text-lg font-semibold">Data Export</h2>
+          <p>Download your data as CSV/PDF here.</p>
+        </div>
       </div>
     </div>
-
-    <!-- ====== Other Sections (hidden by default, shown on nav) ====== -->
-    <div id="dashboard" class="page-section hidden"></div>
-<div id="fixedExpenses" class="page-section hidden"></div>
-<div id="inventory" class="page-section hidden"></div>
-<div id="export" class="page-section hidden"></div>
-<div id="clients" class="page-section hidden"></div>
-<div id="invoice" class="page-section hidden">
-  <div id="invoicePrintArea"></div>
-</div>
-<div id="payments" class="page-section hidden"></div>
-<div id="orders" class="page-section hidden"></div>
-
-
-<!-- Ingredient Manager & Recipe Calculator Section -->
-
-<!-- Sleek Recipe Calculator UI -->
-<div id="recipeCalculator" class="page-section hidden w-full">
-  <div class="w-full glass rounded-xl p-6 mt-8 flex flex-col gap-10">
-    <!-- Top Section: Calculator | Calculation Summary | Final Summary -->
-    <div class="flex flex-col md:flex-row gap-6 w-full">
-      <!-- Recipe Calculator Form -->
-      <form id="recipeForm" class="flex-1 space-y-4 bg-white border border-slate-200 rounded-xl shadow-sm p-4 w-full">
-        <h2 class="text-lg font-semibold text-slate-700 text-center mb-2">Recipe Calculator</h2>
-        <div>
-          <label for="ingredientSelect" class="block text-base font-medium mb-1">Ingredient</label>
-          <select id="ingredientSelect" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400">
-            <option value="">Select ingredient</option>
-          </select>
-        </div>
-        <div>
-          <label for="usedAmount" class="block text-base font-medium mb-1">Amount Used</label>
-          <input id="usedAmount" type="number" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-        </div>
-        <div>
-          <label for="usedUnit" class="block text-base font-medium mb-1">Unit</label>
-          <select id="usedUnit" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400">
-            <option value="">Select unit</option>
-          </select>
-        </div>
-        <div class="flex justify-center mt-2 gap-2">
-          <button type="button" id="calcBtn" class="bg-slate-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-slate-700 transition">Calculate Cost</button>
-          <button type="button" id="resetCalcBtn" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-base font-medium hover:bg-slate-300 transition">Reset</button>
-        </div>
-      </form>
-
-      <!-- Calculation Summary Table -->
-      <div class="flex-1 bg-white border border-slate-200 rounded-xl shadow-sm p-4 w-full">
-  <h2 class="text-lg font-semibold text-slate-700 text-center mb-2">Calculation Summary</h3>
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white rounded-md shadow-sm">
-      <thead>
-        <tr class="bg-slate-100">
-          <th class="py-2 px-3 text-left text-slate-500 font-medium">Ingredient</th>
-          <th class="py-2 px-3 text-left text-slate-500 font-medium">Amount</th>
-          <th class="py-2 px-3 text-left text-slate-500 font-medium">Unit</th>
-          <th class="py-2 px-3 text-left text-slate-500 font-medium">Cost (₹)</th>
-          <th class="py-2 px-3 text-left text-slate-500 font-medium">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="costTableBody">
-        <!-- Calculated rows will appear here -->
-      </tbody>
-    </table>
-  </div>
-  <!-- This is the correct place for the total cost display -->
-  <div id="calcSummaryTotal" class="mt-4 text-center"></div>
-</div>
-
-
-      <!-- Final Summary -->
-      <div class="flex-1 bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex flex-col justify-center w-full">
-        <h2 class="text-lg font-semibold text-slate-700 text-center mb-2">Final Summary</h3>
-        <div class="space-y-2">
-          <div>
-            <label for="labourCost" class="block text-sm font-medium mb-1">Labour Cost (₹)</label>
-            <input id="labourCost" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-          <div>
-            <label for="maintenanceCost" class="block text-sm font-medium mb-1">Maintenance (₹)</label>
-            <input id="maintenanceCost" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-          <div>
-            <label for="licensingCost" class="block text-sm font-medium mb-1">Licensing (₹)</label>
-            <input id="licensingCost" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-          <div>
-            <label for="packagingCost" class="block text-sm font-medium mb-1">Packaging (₹)</label>
-            <input id="packagingCost" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-          <div>
-            <label for="electricityCost" class="block text-sm font-medium mb-1">Electricity (₹)</label>
-            <input id="electricityCost" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-          <div>
-            <label for="profitPercent" class="block text-sm font-medium mb-1">Profit %</label>
-            <input id="profitPercent" type="number" value="0" min="0" class="w-full px-2 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-slate-400" />
-          </div>
-        </div>
-        <div class="mt-3 text-center flex gap-2 justify-center">
-          <button type="button" id="calcFinalBtn" class="bg-slate-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-slate-700 transition">Calculate Final Cost</button>
-          <button type="button" id="resetFinalBtn" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-base font-medium hover:bg-slate-300 transition">Reset</button>
-        </div>
-        <div id="finalSummary" class="mt-4 text-center text-lg font-semibold text-slate-700"></div>
-      </div>
-    </div>
-
-   <!-- Bottom Section: Add Ingredient | Saved Ingredients -->
-<div class="flex flex-col md:flex-row gap-8">
-  <!-- ================= Add/Edit Ingredient Form ================= -->
-  <form id="addEditIngredientForm" class="flex-1 space-y-5 bg-white rounded-xl shadow p-6">
-    <!-- Heading changes to "Edit Ingredient" when editing -->
-    <h2 id="ingredientFormTitle" class="text-lg font-semibold text-slate-700 text-center mb-2">Add Ingredient</h2>
-    <div>
-      <label for="ingredientName" class="block text-base font-medium mb-1 text-slate-600">Ingredient Name</label>
-      <input
-        id="ingredientName"
-        type="text"
-        placeholder="e.g. Cocoa Powder"
-        class="w-full px-4 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-150 shadow-sm"
-      />
-    </div>
-    <div>
-      <label for="ingredientCost" class="block text-base font-medium mb-1 text-slate-600">Package Cost (₹)</label>
-      <input
-        id="ingredientCost"
-        type="number"
-        placeholder="e.g. 250"
-        class="w-full px-4 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-150 shadow-sm"
-      />
-    </div>
-    <div>
-      <label for="ingredientSize" class="block text-base font-medium mb-1 text-slate-600">Package Size</label>
-      <input
-        id="ingredientSize"
-        type="number"
-        placeholder="e.g. 500"
-        class="w-full px-4 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-150 shadow-sm"
-      />
-    </div>
-    <div>
-      <label for="ingredientUnit" class="block text-base font-medium mb-1 text-slate-600">Unit</label>
-      <select
-        id="ingredientUnit"
-        class="w-full px-4 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-150 shadow-sm"
-      >
-        <option value="">Select unit</option>
-        <option value="g">g</option>
-        <option value="kg">kg</option>
-        <option value="ml">ml</option>
-        <option value="L">L</option>
-      </select>
-    </div>
-    <div class="flex justify-center gap-4 mt-2">
-      <!-- Button label changes to "Update Ingredient" when editing -->
-      <button id="ingredientFormBtn" class="bg-slate-600 text-white px-6 py-2 rounded-md text-base font-medium hover:bg-slate-700 transition">Add Ingredient</button>
-      <!-- Cancel button only shows when editing -->
-      <button type="button" id="cancelEditBtn" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md text-base font-medium hover:bg-gray-300 transition" style="display:none;">Cancel</button>
-    </div>
-  </form>
-
-  <!-- ================= Saved Ingredients Table ================= -->
-  <div class="flex-1 bg-white rounded-xl shadow p-6">
-    <h2 class="text-lg font-semibold text-slate-700 text-center mb-2">Saved Ingredients</h2>
-    <div class="overflow-x-auto">
-  <table class="min-w-full bg-white rounded-lg shadow">
-        <thead>
-  <tr class="bg-indigo-50">
-    <th class="py-2 px-4 text-left">Name</th>
-    <th class="py-2 px-4 text-left hidden sm:table-cell">Size</th>
-    <th class="py-2 px-4 text-left hidden sm:table-cell">Unit</th>
-    <th class="py-2 px-4 text-left">Cost (₹)</th>
-    <th class="py-2 px-4 text-left">Actions</th>
-  </tr>
-</thead>
-
-        <tbody id="ingredientsTableBody">
-          <!-- Ingredients will be listed here by JS -->
-        </tbody>
-      </table>
-    </div>
-    <!--
-      Actions:
-      - Edit: Loads ingredient into the form, changes form to "Update Ingredient" mode.
-      - Delete: Removes ingredient from Firestore and updates the table.
-    -->
-  </div>
-</div>
-
-
-
   </main>
 
-  <!-- ================= SCRIPTS ================= -->
-
-  <!-- ====== Greeting Bar Script (keeps behavior) ====== -->
-  <script>
-    function getGreeting() {
-      const hour = new Date().getHours();
-      if (hour < 12) return "Good morning";
-      if (hour < 18) return "Good afternoon";
-      return "Good evening";
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-      const greetingEl = document.getElementById("greetingText");
-      if (greetingEl) greetingEl.textContent = `${getGreeting()}, Karthick!`;
-      // feather icons (if any) — safe to call
-      if (typeof feather !== 'undefined') try { feather.replace(); } catch(e){/* no-op */ }
-    });
-  </script>
-
-  <!-- ====== App Feature Scripts (unchanged file names — your original files) ====== -->
   <script src="js/firebase.js"></script>
-  <script src="js/batch.js"></script>
+  <script src="js/batch.js"></script> 
   <script src="js/dailyLog.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/calculations.js"></script>
@@ -692,308 +556,229 @@
   <script src="js/orders.js"></script>
 
   <script>
-  // Firestore setup
-  const db = window.firebase.firestore();
+    // --- Global UI Controller ---
+    feather.replace();
 
-  // Add ingredient to Firestore
-  document.getElementById("addIngredientForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const name = document.getElementById("ingredientName").value.trim();
-    const cost = parseFloat(document.getElementById("ingredientCost").value);
-    const size = parseFloat(document.getElementById("ingredientSize").value);
-    const unit = document.getElementById("ingredientUnit").value;
-    if (!name || isNaN(cost) || isNaN(size) || !unit) {
-      alert("Please fill all fields.");
-      return;
-    }
-    await db.collection("ingredients").add({
-      name, packageCost: cost, packageSize: size, packageUnit: unit,
-      allowedUnits: unit === "g" || unit === "kg" ? ["g", "kg"] : ["ml", "L"]
-    });
-    document.getElementById("addIngredientForm").reset();
-    loadIngredients();
-  });
+    // DOM Elements
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const mobileBtn = document.getElementById('sidebarToggleMobile');
+    const overlay = document.getElementById('sidebarOverlay');
+    const closeMobile = document.getElementById('closeSidebarMobile');
+    const themeBtn = document.getElementById('darkModeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const toggleIcon = document.getElementById('toggleIcon');
 
-  // Load ingredients from Firestore and show in table & dropdown
-  async function loadIngredients() {
-    const snapshot = await db.collection("ingredients").get();
-    const tableBody = document.getElementById("ingredientsTableBody");
-    const select = document.getElementById("ingredientSelect");
-    tableBody.innerHTML = "";
-    select.innerHTML = '<option value="">Select ingredient</option>';
-    window.BakingCalculator.ingredients = [];
-    snapshot.forEach(doc => {
-      const ing = doc.data();
-      ing.id = doc.id;
-      window.BakingCalculator.ingredients.push(ing);
-      // Table row
-      const tr = document.createElement("tr");
-     tr.innerHTML = `
-  <td class="py-2 px-4">${ing.name}</td>
-  <td class="py-2 px-4 hidden sm:table-cell">${ing.packageSize}</td>
-  <td class="py-2 px-4 hidden sm:table-cell">${ing.packageUnit}</td>
-  <td class="py-2 px-4">${ing.packageCost}</td>
-  <td class="py-2 px-4">
-    <button class="deleteBtn bg-red-500 text-white px-2 py-1 rounded" data-id="${ing.id}">Delete</button>
-  </td>
-`;
+    // --- 1. PERSISTENCE LOGIC (Sidebar) ---
+    const SIDEBAR_STATE_KEY = 'sidebarState';
+    const savedState = localStorage.getItem(SIDEBAR_STATE_KEY);
+    let isCollapsed = savedState === 'collapsed';
 
-      tableBody.appendChild(tr);
-      // Dropdown option
-      const opt = document.createElement("option");
-      opt.value = ing.name;
-      opt.textContent = ing.name;
-      select.appendChild(opt);
-    });
-    // Delete logic
-    document.querySelectorAll(".deleteBtn").forEach(btn => {
-      btn.onclick = async function() {
-        await db.collection("ingredients").doc(btn.getAttribute("data-id")).delete();
-        loadIngredients();
-      };
-    });
-  }
-
-  // Allowed units logic for calculator
-  document.getElementById("ingredientSelect").addEventListener("change", function() {
-    const units = window.BakingCalculator.getAllowedUnits(this.value);
-    const unitSelect = document.getElementById("usedUnit");
-    unitSelect.innerHTML = '<option value="">Select unit</option>';
-    units.forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u;
-      opt.textContent = u;
-      unitSelect.appendChild(opt);
-    });
-  });
-
-  // Calculate cost
-  document.getElementById("calcBtn").addEventListener("click", function() {
-  const name = document.getElementById("ingredientSelect").value;
-  const amount = parseFloat(document.getElementById("usedAmount").value);
-  const unit = document.getElementById("usedUnit").value;
-  const resultDiv = document.getElementById("calcResult");
-  if (!name || isNaN(amount) || !unit) {
-    resultDiv.innerHTML = `<div class="bg-red-50 text-red-700 rounded-lg px-6 py-4 font-semibold shadow text-center">Please fill all fields.</div>`;
-    return;
-  }
-  const cost = window.BakingCalculator.calculateCost(name, amount, unit);
-  resultDiv.innerHTML = `
-    <div class="bg-indigo-50 text-indigo-700 rounded-lg px-6 py-4 font-semibold shadow text-center">
-      Cost for <span class="font-bold">${amount} ${unit}</span> of <span class="font-bold">${name}</span>: 
-      <span class="text-indigo-900 text-xl font-extrabold">₹${cost}</span>
-    </div>
-  `;
-});
-
-
-  // Initial load
-  document.addEventListener("DOMContentLoaded", loadIngredients);
-</script>
-
-
-  <!-- ====== Section Navigation & Sidebar Logic (keeps your original logic) ====== -->
-  <script>
-    // List of all main sections
-    const sections = ["workLog", "dashboard", "fixedExpenses", "inventory", "export", "clients", "invoice", "payments", "orders", "recipeCalculator"];
-
-    // Show/hide loader spinner
-    function toggleLoader(show) {
-      const loader = document.getElementById("loader");
-      loader.style.display = show ? "block" : "none";
+    const setToggleIcon = (collapsed) => {
+        if (collapsed) {
+            toggleIcon.innerHTML = '<polyline points="9 18 15 12 9 6"></polyline>'; 
+        } else {
+            toggleIcon.innerHTML = '<polyline points="15 18 9 12 15 6"></polyline>';
+        }
     }
 
-    // Highlight active nav link
-    function setActiveNav(target) {
-      document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("active"));
-      document.querySelector(`.nav-link[href='#${target}']`)?.classList.add("active");
+    if (isCollapsed) {
+      sidebar.classList.add('collapsed');
+      mainContent.classList.remove('md:pl-[17rem]');
+      mainContent.classList.add('md:pl-20');
+      setToggleIcon(true);
+    } else {
+      setToggleIcon(false);
+    }
+    feather.replace();
+
+    toggleBtn?.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      if(isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.remove('md:pl-[17rem]');
+        mainContent.classList.add('md:pl-20');
+        setToggleIcon(true);
+      } else {
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('md:pl-20');
+        mainContent.classList.add('md:pl-[17rem]');
+        setToggleIcon(false);
+      }
+      localStorage.setItem(SIDEBAR_STATE_KEY, isCollapsed ? 'collapsed' : 'expanded');
+      feather.replace();
+    });
+
+    // --- 2. DARK MODE LOGIC ---
+    const THEME_KEY = 'themePreference';
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>'; 
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>'; 
+      }
+      feather.replace();
     }
 
-    // Show the selected section, hide others
-    function showSection(target) {
-      toggleLoader(true);
-      sections.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && !el.classList.contains("hidden")) {
-          el.classList.remove("show");
-          el.classList.add("fade-out");
-          setTimeout(() => {
-            el.classList.add("hidden");
-            el.classList.remove("fade-out");
-          }, 400);
+    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+      applyTheme(true);
+    } else {
+      applyTheme(false);
+    }
+
+    themeBtn?.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+      applyTheme(isDark);
+    });
+
+    // --- 3. MOBILE MENU ---
+    mobileBtn?.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.classList.remove('hidden');
+    });
+    const closeSidebar = () => {
+      sidebar.classList.remove('open');
+      overlay.classList.add('hidden');
+    };
+    closeMobile?.addEventListener('click', closeSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+
+    // --- 4. NAVIGATION ---
+    const sections = ["home", "workLog", "dashboard", "recipeCalculator", "invoice", "payments", "orders", "inventory", "clients", "fixedExpenses", "export"];
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    function showSection(id) {
+      sections.forEach(s => {
+        const el = document.getElementById(s);
+        if(el) {
+          el.classList.remove('show');
+          setTimeout(() => { if(!el.classList.contains('show')) el.style.display = 'none'; }, 300);
         }
       });
-      const targetEl = document.getElementById(target);
-      if (targetEl) {
-        targetEl.classList.remove("hidden");
-        void targetEl.offsetWidth;
-        setTimeout(() => {
-          targetEl.classList.add("show");
-          if (target === "payments" && typeof renderPaymentsTable === "function") {
-            renderPaymentsTable();
-          }
-          if (target === "clients" && typeof renderClientsSection === "function") {
-  renderClientsSection();
-}
-          toggleLoader(false);
-          const main = document.querySelector('main');
-          if (main) {
-            main.scrollTop = 0;
-          }
-          window.scrollTo({ top: 0, behavior: "auto" });
-        }, 30);
-      } else {
-        toggleLoader(false);
+      
+      setTimeout(() => {
+        const target = document.getElementById(id);
+        if(target) {
+          target.style.display = 'block';
+          void target.offsetWidth;
+          target.classList.add('show');
+          
+          if (id === 'clients' && window.renderClientsSection) window.renderClientsSection();
+          if (id === 'orders' && window.renderOrdersTable) window.renderOrdersTable();
+          if (id === 'dashboard' && window.loadDashboard) window.loadDashboard();
+          if (id === 'payments' && window.renderPaymentsTable) window.renderPaymentsTable();
+        }
+      }, 50);
+
+      navLinks.forEach(l => {
+        l.classList.remove('active');
+        l.classList.add('text-slate-600', 'dark:text-slate-400'); 
+      });
+      
+      const activeLink = document.querySelector(`a[href="#${id}"]`);
+      if(activeLink) {
+        activeLink.classList.add('active');
+        activeLink.classList.remove('text-slate-600', 'dark:text-slate-400');
+      }
+      
+      if(window.innerWidth < 768) closeSidebar();
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('href').substring(1);
+        showSection(id);
+      });
+    });
+
+    // --- 5. TOOLTIPS ---
+    navLinks.forEach(link => {
+      link.addEventListener('mouseenter', () => {
+        if(!isCollapsed) return;
+        const text = link.getAttribute('data-tooltip');
+        const rect = link.getBoundingClientRect();
+        const tip = document.createElement('div');
+        tip.className = 'fixed z-[60] bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none animate-fade-in dark:bg-white dark:text-slate-900 font-bold';
+        tip.id = 'tooltip';
+        tip.innerText = text;
+        tip.style.left = `${rect.right + 10}px`;
+        tip.style.top = `${rect.top + (rect.height/2) - 10}px`;
+        document.body.appendChild(tip);
+      });
+      link.addEventListener('mouseleave', () => {
+        const t = document.getElementById('tooltip');
+        if(t) t.remove();
+      });
+    });
+
+    // --- 6. GREETING & AUTH & SPLASH SCREEN LOGIC ---
+    function updateGreeting(name) {
+      const h = new Date().getHours();
+      const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+      const displayName = name ? name.split(' ')[0] : 'Chef';
+      
+      document.getElementById('greetingText').innerText = `${greet}, ${displayName}`;
+
+      const heroGreeting = document.getElementById('heroGreeting');
+      const heroName = document.getElementById('heroName');
+      if(heroGreeting && heroName) {
+        heroGreeting.innerText = greet;
+        heroName.innerText = displayName;
       }
     }
 
-    // Sidebar nav link click: show section
-    document.querySelectorAll("#sidebarNav .nav-link").forEach(link => {
-      link.addEventListener("click", e => {
-        const target = link.getAttribute("href").substring(1);
-        e.preventDefault();
-        showSection(target);
-        setActiveNav(target);
-        if (target === "dashboard" && typeof loadDashboard === "function") loadDashboard();
-      });
-    });
+    updateGreeting();
 
-    // On page load, show workLog section
-    window.addEventListener("DOMContentLoaded", () => {
-      setActiveNav("workLog");
-      showSection("workLog");
-    });
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('globalLoader');
+        const removeLoader = () => {
+            loader.classList.add('loader-hidden');
+            setTimeout(() => { loader.style.display = 'none'; }, 700);
+        };
 
-    // Sidebar toggle/collapse logic
-  const sidebarOverlay = document.getElementById("sidebarOverlay");
-sidebarToggle?.addEventListener("click", () => {
-  if (window.innerWidth < 769) {
-    sidebar.classList.toggle("open");
-    sidebarOverlay.classList.toggle("hidden", !sidebar.classList.contains("open"));
-  } else {
-    isCollapsed = !isCollapsed;
-    sidebar.classList.toggle("sidebar-collapsed", isCollapsed);
-    document.getElementById("quickAddBtn").style.display = isCollapsed ? "none" : "block";
-  }
-});
-sidebarOverlay.addEventListener("click", () => {
-  sidebar.classList.remove("open");
-  sidebarOverlay.classList.add("hidden");
-});
-
-
-    // Tooltips for icons when sidebar is collapsed
-    document.querySelectorAll("#sidebarNav .nav-link").forEach(link => {
-      link.addEventListener("mouseenter", function () {
-        if (sidebar.classList.contains("sidebar-collapsed")) {
-          const tooltip = document.createElement("div");
-          tooltip.className = "fixed left-16 bg-black text-white text-xs rounded px-2 py-1 z-50";
-          tooltip.style.top = (link.getBoundingClientRect().top + window.scrollY) + "px";
-          tooltip.innerText = link.getAttribute("data-tooltip");
-          tooltip.id = "sidebar-tooltip";
-          document.body.appendChild(tooltip);
+        if(window.auth) {
+            window.auth.onAuthStateChanged(user => {
+                if(user) {
+                    document.getElementById('signInPage').style.display = 'none';
+                    document.getElementById('userInfo').classList.remove('hidden');
+                    document.getElementById('userInfo').classList.add('flex');
+                    document.getElementById('userPhoto').src = user.photoURL || 'assets/LP Logo.png';
+                    document.getElementById('userName').innerText = user.displayName;
+                    document.getElementById('loginBtn').style.display = 'none';
+                    updateGreeting(user.displayName);
+                    setTimeout(removeLoader, 500); // Slight delay for smoothness
+                } else {
+                    document.getElementById('signInPage').style.display = 'flex';
+                    document.getElementById('userInfo').classList.add('hidden');
+                    document.getElementById('loginBtn').style.display = 'block';
+                    updateGreeting();
+                    removeLoader(); // Immediate removal to show login
+                }
+            });
+        } else {
+            removeLoader();
         }
-      });
-      link.addEventListener("mouseleave", function () {
-        document.getElementById("sidebar-tooltip")?.remove();
-      });
+        
+        const hash = window.location.hash.substring(1);
+        if(hash && sections.includes(hash)) {
+            showSection(hash);
+        } else {
+            showSection('home');
+        }
     });
 
-    // Quick Add Button: opens invoice section
-    const quickAddBtn = document.getElementById("quickAddBtn");
-    quickAddBtn.style.display = "block";
-    quickAddBtn.addEventListener("click", () => {
-      showSection("invoice");
-      setActiveNav("invoice");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    document.getElementById('signInGoogleBtn')?.addEventListener('click', () => window.auth?.signInWithPopup(window.googleProvider));
+    document.getElementById('loginBtn')?.addEventListener('click', () => window.auth?.signInWithPopup(window.googleProvider));
+    document.getElementById('logoutBtn')?.addEventListener('click', () => window.auth?.signOut());
 
-    // Dark mode toggle (if you add a button with id="toggleDark")
-    const darkBtn = document.getElementById("toggleDark");
-    darkBtn?.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      if (document.body.classList.contains("dark")) {
-        document.body.classList.add("bg-gray-900", "text-white");
-        sidebar.classList.add("bg-gray-900");
-      } else {
-        document.body.classList.remove("bg-gray-900", "text-white");
-        sidebar.classList.remove("bg-gray-900");
-      }
-    });
-
-    // Keyboard navigation for sidebar (Arrow keys)
-    sidebar.addEventListener("keydown", e => {
-      const links = Array.from(document.querySelectorAll("#sidebarNav .nav-link"));
-      const idx = links.indexOf(document.activeElement);
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        links[(idx + 1) % links.length].focus();
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        links[(idx - 1 + links.length) % links.length].focus();
-      }
-    });
-
-    // Responsive: close sidebar on mobile nav click
-    document.querySelectorAll("#sidebarNav .nav-link").forEach(link => {
-      link.addEventListener("click", () => {
-        if (window.innerWidth < 769) sidebar.classList.remove("open");
-      });
-    });
   </script>
-
-  <!-- ====== Google Sign-In Logic (unchanged behavior) ====== -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const signInPage = document.getElementById("signInPage");
-      const sidebar = document.getElementById("sidebar");
-      const main = document.querySelector("main");
-      const authSection = document.getElementById("authSection");
-
-      function showSignIn(show) {
-        signInPage.style.display = show ? "flex" : "none";
-        sidebar.style.display = show ? "none" : "";
-        main.style.display = show ? "none" : "";
-        authSection.style.display = show ? "none" : "flex";
-      }
-
-      // Listen for auth state changes (your firebase.js should setup window.auth & googleProvider)
-      if (window.auth && typeof window.auth.onAuthStateChanged === 'function') {
-        window.auth.onAuthStateChanged(function(user) {
-          if (user) {
-            showSignIn(false);
-            document.getElementById("loginBtn").style.display = "none";
-            document.getElementById("userInfo").style.display = "flex";
-            document.getElementById("userPhoto").src = user.photoURL;
-            document.getElementById("userName").textContent = user.displayName;
-          } else {
-            showSignIn(true);
-            document.getElementById("loginBtn").style.display = "";
-            document.getElementById("userInfo").style.display = "none";
-          }
-        });
-      }
-
-      // Google sign-in from sign-in page
-      document.getElementById("signInGoogleBtn").addEventListener("click", function() {
-        window.auth.signInWithPopup(window.googleProvider).catch(function(error) {
-          alert("Sign in failed: " + error.message);
-        });
-      });
-
-      // Google sign-in from header
-      document.getElementById("loginBtn").addEventListener("click", function() {
-        window.auth.signInWithPopup(window.googleProvider).catch(function(error) {
-          alert("Sign in failed: " + error.message);
-        });
-      });
-
-      // Logout button
-      document.getElementById("logoutBtn").addEventListener("click", function() {
-        window.auth.signOut();
-      });
-    });
-  </script>
-
 </body>
 </html>

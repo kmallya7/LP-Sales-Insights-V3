@@ -1,28 +1,18 @@
-// orders.js
+// js/orders.js
 
 document.addEventListener("DOMContentLoaded", () => {
   const ordersSection = document.getElementById("orders");
   const db = window.db; // Firestore instance
 
-  // Color palette with #C8AFF0 as theme, no glossy, each card a different color but theme is #C8AFF0
-  const COLORS = {
-    background: "#F6F8FA",
-    primary: "#C8AFF0", // App theme color
-    secondary: "#64748B",
-    success: "#22C55E",
-    warning: "#F59E42",
-    danger: "#EF4444",
-    text: "#1E293B",
-    rowAlt: "#F1F5F9",
-    badgeReceived: "#E0E7FF",
-    badgeBaked: "#FEF9C3",
-    badgeDelivered: "#DCFCE7",
-    badgeCancelled: "#F3F4F6",
-    cardReceived: "#C8AFF0",      // Theme color
-    cardBaked: "#FDE68A",         // Soft yellow
-    cardDelivered: "#BBF7D0",     // Soft green
-    cardCancelled: "#E5E7EB"      // Soft gray
-  };
+  // Initialize Notyf
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: 'right', y: 'top' },
+    types: [
+      { type: 'success', background: '#2563eb', icon: false }, 
+      { type: 'error', background: '#ef4444', icon: false }
+    ]
+  });
 
   function getCurrentMonthYear() {
     const now = new Date();
@@ -30,78 +20,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function formatDate(dateStr) {
-    // Expects 'YYYY-MM-DD', returns '4-Jul-2025'
     if (!dateStr) return "";
     const [year, month, day] = dateStr.split("-");
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${parseInt(day, 10)}-${months[parseInt(month, 10) - 1]}-${year}`;
+    return `${parseInt(day, 10)} ${months[parseInt(month, 10) - 1]} ${year}`;
   }
 
-  function showToast(message, type = "success") {
-    let toast = document.getElementById("orders-toast");
-    if (!toast) {
-      toast = document.createElement("div");
-      toast.id = "orders-toast";
-      toast.style.position = "fixed";
-      toast.style.bottom = "40px";
-      toast.style.left = "50%";
-      toast.style.transform = "translateX(-50%)";
-      toast.style.zIndex = "9999";
-      toast.style.padding = "12px 24px";
-      toast.style.borderRadius = "10px";
-      toast.style.fontWeight = "bold";
-      toast.style.fontSize = "0.98rem";
-      toast.style.boxShadow = "0 4px 24px rgba(0,0,0,0.10)";
-      toast.style.letterSpacing = "0.02em";
-      toast.style.transition = "opacity 0.3s";
-      toast.style.opacity = "0";
-      document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.style.background = type === "error" ? COLORS.danger : COLORS.primary;
-    toast.style.color = "#fff";
-    toast.style.display = "block";
-    toast.style.opacity = "1";
-    setTimeout(() => { toast.style.opacity = "0"; }, 2200);
-    setTimeout(() => { toast.style.display = "none"; }, 2500);
-  }
-
-  function showLoader(show) {
-    let loader = document.getElementById("orders-loader");
-    if (!loader) {
-      loader = document.createElement("div");
-      loader.id = "orders-loader";
-      loader.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;">
-        <svg class="animate-spin" style="height:32px;width:32px;color:${COLORS.primary};" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="${COLORS.primary}" stroke-width="4"></circle>
-          <path class="opacity-75" fill="${COLORS.primary}" d="M4 12a8 8 0 018-8v8z"></path>
-        </svg>
-      </div>`;
-      loader.style.position = "fixed";
-      loader.style.top = "0";
-      loader.style.left = "0";
-      loader.style.width = "100vw";
-      loader.style.height = "100vh";
-      loader.style.background = "rgba(246,248,250,0.7)";
-      loader.style.zIndex = "9998";
-      loader.style.display = "none";
-      loader.style.backdropFilter = "blur(2px)";
-      document.body.appendChild(loader);
-    }
-    loader.style.display = show ? "block" : "none";
-  }
-
+  // --- Main Render Function ---
   async function renderOrdersTable(selectedMonthYear = getCurrentMonthYear()) {
     if (!ordersSection) return;
-    showLoader(true);
+
+    // AESTHETIC LOADER
+    ordersSection.innerHTML = `
+      <div class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-md transition-opacity">
+        <div class="relative w-16 h-16 mb-4">
+           <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+           <img src="assets/Flowr Logo.png" class="relative w-full h-full rounded-full animate-breath shadow-lg">
+        </div>
+        <p class="text-sm text-slate-500 font-semibold animate-pulse tracking-wide">Fetching Orders...</p>
+      </div>
+    `;
 
     if (!db || typeof db.collection !== "function") {
-      ordersSection.innerHTML = `
-        <div class="max-w-2xl mx-auto py-12 text-center" style="color:${COLORS.danger};">
-          Firestore is not initialized. Please check your Firebase setup.
-        </div>
-      `;
-      showLoader(false);
+      ordersSection.innerHTML = `<div class="p-12 text-center text-red-500">Firestore not initialized.</div>`;
       return;
     }
 
@@ -109,14 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       ordersSnapshot = await db.collection("orders").get();
     } catch (err) {
-      ordersSection.innerHTML = `
-        <div class="max-w-2xl mx-auto py-12 text-center" style="color:${COLORS.danger};">
-          Error loading orders: ${err.message}
-        </div>
-      `;
-      showLoader(false);
+      console.error(err);
+      notyf.error("Error loading orders.");
+      ordersSection.innerHTML = `<div class="p-12 text-center text-red-500">Error loading data.</div>`;
       return;
     }
+
     const orders = [];
     ordersSnapshot.forEach(doc => {
       const d = doc.data();
@@ -125,377 +64,359 @@ document.addEventListener("DOMContentLoaded", () => {
       orders.push({ id: doc.id, ...d });
     });
 
+    // Calculate Stats
     const statusCounts = { Received: 0, Baked: 0, Delivered: 0, Cancelled: 0 };
     orders.forEach(o => {
       statusCounts[o.status || "Received"] = (statusCounts[o.status || "Received"] || 0) + 1;
     });
 
-    let monthPickerHtml = `
-      <form id="orders-month-filter-form" class="mb-4 flex flex-wrap gap-3 items-center" style="font-size:0.89rem;">
-        <label class="font-medium" style="color:${COLORS.text};">Show for:</label>
-        <input type="month" id="orders-month-filter" name="month" value="${selectedMonthYear}" class="border rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" />
-      </form>
+    // --- HTML Construction ---
+    
+    // 1. Month Picker
+    const monthPickerHtml = `
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 mb-6">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg">
+                <i data-feather="calendar" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <span class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Period:</span>
+            <input type="month" id="orders-month-filter" value="${selectedMonthYear}" 
+              class="p-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold cursor-pointer" />
+        </div>
+        <button id="add-order-btn" class="w-full sm:w-auto bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-slate-200 dark:shadow-none flex items-center justify-center gap-2">
+          <i data-feather="plus" class="w-4 h-4"></i> New Order
+        </button>
+      </div>
     `;
 
-    // Card stack: theme color for Received, others are soft but not glossy, all text black, centered
-    let cardStackHtml = `
-      <div class="flex flex-wrap gap-3 mb-6" style="font-size:0.91rem;">
-        <div class="flex-1 min-w-[120px] rounded-xl shadow p-4 flex flex-col items-center border border-indigo-100 hover:scale-105 transition" style="background:${COLORS.cardReceived}; color:#000; text-align:center;">
-          <div class="text-2xl font-extrabold mb-1" style="color:#000;">${statusCounts.Received}</div>
-          <div class="text-xs font-medium" style="color:#000;">Received</div>
+    // 2. Stats Cards
+    const cardClass = "flex-1 bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-1 transition hover:-translate-y-1 hover:shadow-md";
+    const labelClass = "text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500";
+    const valueClass = "text-3xl font-extrabold text-slate-800 dark:text-white";
+
+    const statsHtml = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="${cardClass}">
+          <span class="${labelClass}">Received</span>
+          <span class="${valueClass} text-blue-600 dark:text-blue-400">${statusCounts.Received}</span>
         </div>
-        <div class="flex-1 min-w-[120px] rounded-xl shadow p-4 flex flex-col items-center border border-yellow-100 hover:scale-105 transition" style="background:${COLORS.cardBaked}; color:#000; text-align:center;">
-          <div class="text-2xl font-extrabold mb-1" style="color:#000;">${statusCounts.Baked}</div>
-          <div class="text-xs font-medium" style="color:#000;">Baked</div>
+        <div class="${cardClass}">
+          <span class="${labelClass}">Baked</span>
+          <span class="${valueClass} text-amber-500">${statusCounts.Baked}</span>
         </div>
-        <div class="flex-1 min-w-[120px] rounded-xl shadow p-4 flex flex-col items-center border border-green-100 hover:scale-105 transition" style="background:${COLORS.cardDelivered}; color:#000; text-align:center;">
-          <div class="text-2xl font-extrabold mb-1" style="color:#000;">${statusCounts.Delivered}</div>
-          <div class="text-xs font-medium" style="color:#000;">Delivered</div>
+        <div class="${cardClass}">
+          <span class="${labelClass}">Delivered</span>
+          <span class="${valueClass} text-emerald-600 dark:text-emerald-400">${statusCounts.Delivered}</span>
         </div>
-        <div class="flex-1 min-w-[120px] rounded-xl shadow p-4 flex flex-col items-center border border-gray-200 hover:scale-105 transition" style="background:${COLORS.cardCancelled}; color:#000; text-align:center;">
-          <div class="text-2xl font-extrabold mb-1" style="color:#000;">${statusCounts.Cancelled}</div>
-          <div class="text-xs font-medium" style="color:#000;">Cancelled</div>
+        <div class="${cardClass}">
+          <span class="${labelClass}">Cancelled</span>
+          <span class="${valueClass} text-rose-500">${statusCounts.Cancelled}</span>
         </div>
       </div>
     `;
 
-    let html = `
-      <div class="max-w-4xl mx-auto py-6" style="font-size:0.91rem;">
-        <div class="flex items-center justify-between mb-5">
-          <h2 class="text-3xl font-extrabold flex items-center gap-2" style="color:${COLORS.text}; letter-spacing:0.01em; font-size:1.5rem;">
-            <span style="font-size:1.7rem;">🧁</span> Orders Tracker
-          </h2>
-          <button id="add-order-btn" class="px-4 py-2 rounded-lg shadow font-semibold transition hover:bg-indigo-600 hover:scale-105"
-            style="background:${COLORS.primary}; color:white; border:none; font-size:0.98rem;">
-            + New Order
-          </button>
-        </div>
-        ${monthPickerHtml}
-        ${cardStackHtml}
-        <div class="overflow-x-auto rounded-xl shadow bg-white border" style="border-color:${COLORS.rowAlt};">
-          <table class="min-w-full text-base" style="color:${COLORS.text}; border-radius:1.2rem; overflow:hidden; font-size:0.91rem;">
-            <thead>
-              <tr style="background:${COLORS.background}; color:${COLORS.text}; text-transform:uppercase; letter-spacing:0.07em;">
-                <th class="p-3 text-center">Date</th>
-                <th class="p-3 text-center">Customer</th>
-                <th class="p-3 text-center">Item</th>
-                <th class="p-3 text-center">Qty</th>
-                <th class="p-3 text-center">Status</th>
-                <th class="p-3 text-center">Update</th>
-                <th class="p-3 text-center">Details</th>
-                <th class="p-3 text-center">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-    `;
-
+    // 3. Table Construction
+    let tableRows = '';
+    
     if (orders.length === 0) {
-      html += `
+      tableRows = `
         <tr>
-          <td colspan="8" class="p-8 text-center" style="color:${COLORS.secondary};">
-            <div style="font-size:0.98rem;margin-bottom:8px;">No orders found for this month.</div>
-            <div>
-              <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f370.svg" alt="cake" style="width:36px;height:36px;opacity:0.25;">
+          <td colspan="6" class="p-12 text-center text-slate-400 dark:text-slate-500">
+            <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-full inline-block mb-3">
+                <i data-feather="inbox" class="w-8 h-8 opacity-50"></i>
             </div>
-            <div style="margin-top:8px;color:${COLORS.text};font-size:0.91rem;">Click <b>+ New Order</b> to add your first order!</div>
+            <p class="text-sm font-medium">No orders found for this month.</p>
           </td>
-        </tr>
-      `;
+        </tr>`;
     } else {
-      orders.sort((a, b) => b.date.localeCompare(a.date)).forEach((order, idx) => {
-        html += `
-          <tr style="background:${idx % 2 === 0 ? COLORS.background : COLORS.rowAlt}; transition:background 0.2s;">
-            <td class="p-3 text-center">${formatDate(order.date)}</td>
-            <td class="p-3 text-center" style="font-weight:500; font-size:0.97rem;">${order.customer}</td>
-            <td class="p-3 text-center">${order.item}</td>
-            <td class="p-3 text-center">${order.quantity || 1}</td>
-            <td class="p-3 text-center">
-              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
-                style="
-                  background:${
-                    order.status === "Delivered" ? COLORS.badgeDelivered :
-                    order.status === "Baked" ? COLORS.badgeBaked :
-                    order.status === "Cancelled" ? COLORS.badgeCancelled :
-                    COLORS.badgeReceived
-                  };
-                  color:${
-                    order.status === "Delivered" ? COLORS.success :
-                    order.status === "Baked" ? COLORS.warning :
-                    order.status === "Cancelled" ? COLORS.secondary :
-                    COLORS.primary
-                  };
-                  min-width:70px;
-                  text-align:center;
-                  font-size:0.91rem;
-                  letter-spacing:0.01em;
-                ">
-                ${order.status || "Received"}
-              </span>
+      orders.sort((a, b) => b.date.localeCompare(a.date)).forEach((order) => {
+        // Status Badge Logic
+        let badgeColor = "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+        if (order.status === "Received") badgeColor = "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
+        if (order.status === "Baked") badgeColor = "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800";
+        if (order.status === "Delivered") badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
+        if (order.status === "Cancelled") badgeColor = "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800";
+
+        tableRows += `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 group">
+            <td class="p-4 font-bold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">${formatDate(order.date)}</td>
+            <td class="p-4 text-slate-800 dark:text-slate-200 font-medium">${order.customer}</td>
+            <td class="p-4 text-slate-600 dark:text-slate-400">
+                <span class="font-medium text-slate-800 dark:text-white">${order.item}</span> 
+                <span class="ml-1 text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-slate-500 font-bold">x${order.quantity}</span>
             </td>
-            <td class="p-3 text-center">
-              <button class="update-status-btn px-3 py-1 rounded-lg font-semibold shadow-sm hover:bg-indigo-500 hover:scale-105 transition"
-                style="background:${COLORS.secondary}; color:#fff; border:none; font-size:0.91rem;"
-                data-id="${order.id}" data-status="${order.status || "Received"}">
-                Update
-              </button>
+            <td class="p-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}">${order.status || "Received"}</span>
             </td>
-            <td class="p-3 text-center">
-              <button class="show-order-details-btn font-medium underline hover:text-indigo-600 transition" style="color:${COLORS.primary}; background:none; border:none; font-size:0.91rem;" data-id="${order.id}">
-                Details
-              </button>
+            <td class="p-4">
+               <button class="update-status-btn text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg transition shadow-sm" 
+                 data-id="${order.id}" data-status="${order.status || 'Received'}">Change Status</button>
             </td>
-            <td class="p-3 text-center">
-              <button class="delete-order-btn px-3 py-1 rounded-lg font-semibold shadow-sm hover:bg-red-600 hover:scale-105 transition"
-                style="background:${COLORS.danger}; color:#fff; border:none; font-size:0.91rem;"
-                data-id="${order.id}">
-                🗑️
-              </button>
+            <td class="p-4 text-right">
+               <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <button class="show-details-btn p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition" data-id="${order.id}"><i data-feather="eye" class="w-4 h-4"></i></button>
+                   <button class="delete-order-btn p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition" data-id="${order.id}"><i data-feather="trash-2" class="w-4 h-4"></i></button>
+               </div>
             </td>
           </tr>
         `;
       });
     }
 
-    html += `
+    const tableHtml = `
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold uppercase text-xs border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="p-4">Date</th>
+                <th class="p-4">Customer</th>
+                <th class="p-4">Item</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Quick Action</th>
+                <th class="p-4 text-right">Options</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+              ${tableRows}
             </tbody>
           </table>
         </div>
-        <div id="order-form-modal" class="fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(30,41,59,0.18); display:none"></div>
-        <div id="order-details-modal" class="fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(30,41,59,0.18); display:none"></div>
       </div>
     `;
 
-    ordersSection.innerHTML = html;
+    // Combine all parts
+    ordersSection.innerHTML = `
+      <div class="max-w-7xl mx-auto space-y-6 animate-fade-in">
+          <div class="flex items-center gap-2 mb-2">
+             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Order Management</h2>
+          </div>
+          ${monthPickerHtml}
+          ${statsHtml}
+          ${tableHtml}
+      </div>
+      <div id="order-modal-container"></div>
+    `;
 
-    document.getElementById('orders-month-filter-form').onsubmit = e => e.preventDefault();
+    // --- Event Listeners ---
+    feather.replace();
+
     document.getElementById('orders-month-filter').onchange = (e) => {
       renderOrdersTable(e.target.value);
     };
 
+    document.getElementById('add-order-btn').onclick = () => {
+      openOrderModal(selectedMonthYear);
+    };
+
     document.querySelectorAll('.update-status-btn').forEach(btn => {
-      btn.onclick = () => {
-        showUpdateStatusForm(btn.dataset.id, btn.dataset.status, selectedMonthYear);
-      };
+      btn.onclick = () => openStatusModal(btn.dataset.id, btn.dataset.status, selectedMonthYear);
     });
 
-    document.querySelectorAll('.show-order-details-btn').forEach(btn => {
-      btn.onclick = () => {
-        showOrderDetails(btn.dataset.id, selectedMonthYear);
-      };
+    document.querySelectorAll('.show-details-btn').forEach(btn => {
+      btn.onclick = () => openDetailsModal(btn.dataset.id, selectedMonthYear);
     });
 
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
-      btn.onclick = () => {
-        if (confirm("Are you sure you want to delete this order?")) {
-          db.collection("orders").doc(btn.dataset.id).delete().then(() => {
-            showToast("Order deleted");
+      btn.onclick = async () => {
+        if (confirm("Delete this order?")) {
+          try {
+            await db.collection("orders").doc(btn.dataset.id).delete();
+            notyf.success("Order deleted");
             renderOrdersTable(selectedMonthYear);
-          });
+          } catch(e) {
+            notyf.error("Could not delete order");
+          }
         }
       };
     });
-
-    document.getElementById('add-order-btn').onclick = () => {
-      showOrderForm(selectedMonthYear);
-    };
-
-    showLoader(false);
   }
 
-  function showOrderForm(selectedMonthYear) {
-    const modal = document.getElementById('order-form-modal');
-    const today = new Date();
-    const defaultDateStr = today.toISOString().split('T')[0];
+  // --- 5. FIXED MODAL (No Whitespace) ---
+  function openOrderModal(selectedMonthYear) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const modalHtml = `
+      <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform scale-100 transition-all">
+          
+          <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+             <h3 class="font-bold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+               <span class="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600"><i data-feather="plus" class="w-4 h-4"></i></span>
+               New Order
+             </h3>
+             <button id="modal-close-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+               <i data-feather="x" class="w-5 h-5"></i>
+             </button>
+          </div>
 
-    modal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-xl p-7 w-full max-w-md relative animate-fadeIn" style="border:1px solid ${COLORS.rowAlt}; font-size:0.91rem;">
-        <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" id="close-order-form" title="Close" style="background:none; border:none;">&times;</button>
-        <h3 class="text-xl font-extrabold mb-4" style="color:${COLORS.text}; letter-spacing:0.01em;">Add New Order</h3>
-        <form id="add-order-form" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-date" style="color:${COLORS.text};">Date</label>
-            <input type="date" name="date" id="order-date" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" required value="${defaultDateStr}" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-customer" style="color:${COLORS.text};">Customer</label>
-            <input type="text" name="customer" id="order-customer" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-item" style="color:${COLORS.text};">Item</label>
-            <input type="text" name="item" id="order-item" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-quantity" style="color:${COLORS.text};">Quantity</label>
-            <input type="number" name="quantity" id="order-quantity" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" required min="1" value="1" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-notes" style="color:${COLORS.text};">Notes (optional)</label>
-            <input type="text" name="notes" id="order-notes" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" />
-          </div>
-          <div class="flex gap-2 mt-4">
-            <button type="submit" class="flex-1 px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-indigo-600 transition" style="background:${COLORS.primary}; color:#fff; border:none;">Save</button>
-            <button type="button" id="cancel-order-form" class="flex-1 px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-gray-200 transition" style="background:${COLORS.rowAlt}; color:${COLORS.text}; border:1px solid ${COLORS.secondary};">Cancel</button>
-          </div>
-        </form>
+          <form id="add-order-form" class="p-6 space-y-5">
+             <div>
+               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Date</label>
+               <input type="date" name="date" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-medium" required value="${today}">
+             </div>
+
+             <div>
+               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Customer Name</label>
+               <input type="text" name="customer" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required placeholder="e.g. John Doe">
+             </div>
+
+             <div class="grid grid-cols-12 gap-4">
+                 <div class="col-span-8">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Item</label>
+                    <input type="text" name="item" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required placeholder="e.g. Choco Cake">
+                 </div>
+                 <div class="col-span-4">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Qty</label>
+                    <input type="number" name="quantity" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-center font-bold" required min="1" value="1">
+                 </div>
+             </div>
+
+             <div>
+               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Notes</label>
+               <textarea name="notes" rows="2" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none" placeholder="Allergies, special requests..."></textarea>
+             </div>
+
+             <div class="flex items-center gap-3 pt-4">
+                 <button type="button" id="modal-cancel-btn" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                    Cancel
+                 </button>
+                 <button type="submit" class="flex-1 px-4 py-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-slate-200 dark:shadow-none transition transform active:scale-95">
+                    Save Order
+                 </button>
+             </div>
+          </form>
+        </div>
       </div>
     `;
-    modal.style.display = "flex";
 
-    document.getElementById('close-order-form').onclick =
-    document.getElementById('cancel-order-form').onclick = () => {
-      modal.style.display = "none";
-      modal.innerHTML = '';
-    };
+    const container = document.getElementById('order-modal-container');
+    container.innerHTML = modalHtml;
+    feather.replace();
+
+    const closeModal = () => { container.innerHTML = ''; };
+    document.getElementById('modal-close-btn').onclick = closeModal;
+    document.getElementById('modal-cancel-btn').onclick = closeModal;
 
     document.getElementById('add-order-form').onsubmit = async (e) => {
       e.preventDefault();
       const form = e.target;
-      const date = form.date.value;
-      const customer = form.customer.value.trim();
-      const item = form.item.value.trim();
-      const quantity = parseInt(form.quantity.value, 10);
-      const notes = form.notes.value.trim();
-      await db.collection("orders").add({
-        date, customer, item, quantity, notes, status: "Received", createdAt: new Date()
-      });
-      modal.style.display = "none";
-      modal.innerHTML = '';
-      showToast("Order added");
-      renderOrdersTable(date.slice(0, 7));
-    };
-  }
-
-  function showUpdateStatusForm(orderId, currentStatus, selectedMonthYear) {
-    const modal = document.getElementById('order-form-modal');
-    const statuses = ["Received", "Baked", "Delivered", "Cancelled"];
-    modal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-xl p-7 w-full max-w-md relative animate-fadeIn" style="border:1px solid ${COLORS.rowAlt}; font-size:0.91rem;">
-        <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" id="close-update-status" title="Close" style="background:none; border:none;">&times;</button>
-        <h3 class="text-xl font-extrabold mb-4" style="color:${COLORS.text}; letter-spacing:0.01em;">Update Order Status</h3>
-        <form id="update-status-form" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1" for="order-status" style="color:${COLORS.text};">Status</label>
-            <select name="status" id="order-status" class="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-300 transition" style="border-color:${COLORS.secondary}; color:${COLORS.text}; background:${COLORS.background};" required>
-              ${statuses.map(s => `<option value="${s}"${s === currentStatus ? " selected" : ""}>${s}</option>`).join("")}
-            </select>
-          </div>
-          <div class="flex gap-2 mt-4">
-            <button type="submit" class="flex-1 px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-indigo-600 transition" style="background:${COLORS.primary}; color:#fff; border:none;">Save</button>
-            <button type="button" id="cancel-update-status" class="flex-1 px-3 py-2 rounded-lg font-semibold shadow-md hover:bg-gray-200 transition" style="background:${COLORS.rowAlt}; color:${COLORS.text}; border:1px solid ${COLORS.secondary};">Cancel</button>
-          </div>
-        </form>
-      </div>
-    `;
-    modal.style.display = "flex";
-
-    document.getElementById('close-update-status').onclick =
-    document.getElementById('cancel-update-status').onclick = () => {
-      modal.style.display = "none";
-      modal.innerHTML = '';
-    };
-
-    document.getElementById('update-status-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const status = e.target.status.value;
-      await db.collection("orders").doc(orderId).update({ status });
-      modal.style.display = "none";
-      modal.innerHTML = '';
-      showToast("Status updated");
-      renderOrdersTable(selectedMonthYear);
-    };
-  }
-
-  async function showOrderDetails(orderId, selectedMonthYear) {
-    const modal = document.getElementById('order-details-modal');
-    const doc = await db.collection("orders").doc(orderId).get();
-    if (!doc.exists) return;
-    const o = doc.data();
-    modal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-xl p-7 w-full max-w-lg relative animate-fadeIn" style="border:1px solid ${COLORS.rowAlt}; font-size:0.91rem;">
-        <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" id="close-order-details" title="Close" style="background:none; border:none;">&times;</button>
-        <h3 class="text-xl font-extrabold mb-4" style="color:${COLORS.text}; letter-spacing:0.01em;">Order Details</h3>
-        <div class="mb-4 space-y-1">
-          <div><span class="font-medium" style="color:${COLORS.text};">Date:</span> ${formatDate(o.date)}</div>
-          <div><span class="font-medium" style="color:${COLORS.text};">Customer:</span> ${o.customer}</div>
-          <div><span class="font-medium" style="color:${COLORS.text};">Item:</span> ${o.item}</div>
-          <div><span class="font-medium" style="color:${COLORS.text};">Quantity:</span> ${o.quantity || 1}</div>
-          <div><span class="font-medium" style="color:${COLORS.text};">Status:</span> ${o.status || "Received"}</div>
-          <div><span class="font-medium" style="color:${COLORS.text};">Notes:</span> ${o.notes || "-"}</div>
-        </div>
-        <div class="flex justify-end gap-2">
-          <button id="delete-order-details-btn" class="px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-red-600 transition" style="background:${COLORS.danger}; color:#fff; border:none;">Delete</button>
-          <button id="close-order-details-btn" class="px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-gray-200 transition" style="background:${COLORS.rowAlt}; color:${COLORS.text}; border:1px solid ${COLORS.secondary};">Close</button>
-        </div>
-      </div>
-    `;
-    modal.style.display = "flex";
-    document.getElementById('close-order-details').onclick =
-    document.getElementById('close-order-details-btn').onclick = () => {
-      modal.style.display = "none";
-      modal.innerHTML = '';
-    };
-    document.getElementById('delete-order-details-btn').onclick = async () => {
-      if (confirm("Are you sure you want to delete this order?")) {
-        await db.collection("orders").doc(orderId).delete();
-        modal.style.display = "none";
-        modal.innerHTML = '';
-        showToast("Order deleted");
-        renderOrdersTable(selectedMonthYear || getCurrentMonthYear());
+      try {
+        await window.db.collection("orders").add({
+          date: form.date.value,
+          customer: form.customer.value.trim(),
+          item: form.item.value.trim(),
+          quantity: parseInt(form.quantity.value),
+          notes: form.notes.value.trim(),
+          status: "Received",
+          createdAt: new Date()
+        });
+        notyf.success("Order Created!");
+        closeModal();
+        renderOrdersTable(form.date.value.slice(0, 7));
+      } catch (err) {
+        console.error(err);
+        notyf.error("Error saving order.");
       }
     };
   }
 
-  // Animation for modals and loader
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.98);}
-      to   { opacity: 1; transform: scale(1);}
-    }
-    .animate-fadeIn { animation: fadeIn 0.18s; }
-    #orders-loader .animate-spin {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      100% { transform: rotate(360deg);}
-    }
-    /* Custom scrollbar for table */
-    .overflow-x-auto::-webkit-scrollbar {
-      height: 8px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-      background: #e0e7ef;
-      border-radius: 8px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-track {
-      background: #f6f8fa;
-    }
-    /* Responsive tweaks */
-    @media (max-width: 700px) {
-      .max-w-4xl { max-width: 99vw !important; }
-      .p-7 { padding: 1rem !important; }
-      .p-8 { padding: 1rem !important; }
-      .p-4 { padding: 0.7rem !important; }
-      .p-3 { padding: 0.5rem !important; }
-    }
-    /* Reduce font size for all table and card content */
-    .max-w-4xl, .max-w-4xl * {
-      font-size: 0.91rem !important;
-    }
-    th, td {
-      font-size: 0.91rem !important;
-    }
-    /* Make everything more compact */
-    table th, table td {
-      padding-top: 0.5rem !important;
-      padding-bottom: 0.5rem !important;
-    }
-    .shadow, .shadow-md, .shadow-xl, .shadow-lg {
-      box-shadow: 0 1px 4px 0 rgba(0,0,0,0.07) !important;
-    }
-  `;
-  document.head.appendChild(style);
+  // --- Status Update Modal ---
+  function openStatusModal(orderId, currentStatus, selectedMonthYear) {
+    const statuses = ["Received", "Baked", "Delivered", "Cancelled"];
+    const options = statuses.map(s => `<option value="${s}" ${s === currentStatus ? 'selected' : ''}>${s}</option>`).join('');
+    
+    const modalHtml = `
+      <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+           <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+             <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <i data-feather="check-circle" class="w-4 h-4 text-green-500"></i> Update Status
+             </h3>
+             <button id="status-close-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-feather="x" class="w-5 h-5"></i></button>
+           </div>
+           <form id="status-form" class="p-6">
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-2">New Status</label>
+              <div class="relative">
+                  <select id="new-status" class="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-white mb-6 appearance-none font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                    ${options}
+                  </select>
+                  <div class="absolute inset-y-0 right-0 top-0 bottom-6 flex items-center px-3 pointer-events-none text-slate-500">
+                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                  </div>
+              </div>
+              <button type="submit" class="w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg hover:opacity-90 transition">Save Changes</button>
+           </form>
+        </div>
+      </div>
+    `;
+
+    const container = document.getElementById('order-modal-container');
+    container.innerHTML = modalHtml;
+    feather.replace();
+
+    document.getElementById('status-close-btn').onclick = () => container.innerHTML = '';
+    
+    document.getElementById('status-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const newStatus = document.getElementById('new-status').value;
+      try {
+        await db.collection("orders").doc(orderId).update({ status: newStatus });
+        container.innerHTML = '';
+        notyf.success("Status Updated");
+        renderOrdersTable(selectedMonthYear);
+      } catch (err) {
+        notyf.error("Update failed");
+      }
+    };
+  }
+
+  // --- Details Modal ---
+  async function openDetailsModal(orderId, selectedMonthYear) {
+    const doc = await db.collection("orders").doc(orderId).get();
+    if (!doc.exists) return;
+    const o = doc.data();
+
+    const modalHtml = `
+      <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+           <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+             <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <i data-feather="file-text" class="w-4 h-4 text-blue-500"></i> Order Details
+             </h3>
+             <button id="details-close-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-feather="x" class="w-5 h-5"></i></button>
+           </div>
+           <div class="p-6 space-y-4 text-sm">
+              <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span class="text-slate-500 font-medium">Date</span>
+                  <span class="font-bold text-slate-800 dark:text-white">${formatDate(o.date)}</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span class="text-slate-500 font-medium">Customer</span>
+                  <span class="font-bold text-slate-800 dark:text-white">${o.customer}</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span class="text-slate-500 font-medium">Order</span>
+                  <span class="font-bold text-slate-800 dark:text-white">${o.item} (x${o.quantity})</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span class="text-slate-500 font-medium">Status</span>
+                  <span class="font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">${o.status}</span>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <span class="block text-xs font-bold text-slate-400 uppercase mb-1">NOTES</span>
+                  <p class="text-slate-700 dark:text-slate-300 italic">${o.notes || "No notes provided."}</p>
+              </div>
+           </div>
+        </div>
+      </div>
+    `;
+    
+    const container = document.getElementById('order-modal-container');
+    container.innerHTML = modalHtml;
+    feather.replace();
+    document.getElementById('details-close-btn').onclick = () => container.innerHTML = '';
+  }
 
   window.renderOrdersTable = renderOrdersTable;
-  renderOrdersTable();
 });

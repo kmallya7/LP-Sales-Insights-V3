@@ -1,190 +1,316 @@
 // batch.js
 
-// --- Dropdown logic ---
+// --- Global Logic & Font Injection ---
+const fontLink = document.createElement('link');
+fontLink.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
+
+// Dropdown Toggle Logic
 window.toggleDropdown = function(id) {
   document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-    if (el.id !== `dropdown-${id}`) el.classList.add('hidden');
+    if (el.id !== `dropdown-${id}`) el.classList.add('hidden', 'opacity-0', 'scale-95');
   });
+  
   const dropdown = document.getElementById(`dropdown-${id}`);
-  if (dropdown) dropdown.classList.toggle('hidden');
+  if (dropdown) {
+    if (dropdown.classList.contains('hidden')) {
+      dropdown.classList.remove('hidden');
+      setTimeout(() => {
+        dropdown.classList.remove('opacity-0', 'scale-95');
+      }, 10);
+    } else {
+      dropdown.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        dropdown.classList.add('hidden');
+      }, 150);
+    }
+  }
 };
+
 document.addEventListener('click', function(event) {
-  if (!event.target.closest('.relative')) {
-    document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
+  if (!event.target.closest('.relative-dropdown')) {
+    document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+      el.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => el.classList.add('hidden'), 150);
+    });
   }
 });
 
 // --- Main UI logic ---
 document.addEventListener("DOMContentLoaded", () => {
   const batchSection = document.getElementById("batchCalculator");
+  
+  // Updated Layout
   batchSection.innerHTML = `
-    <section class="bg-gradient-to-br from-gray-50 to-white p-8 rounded-2xl shadow-xl max-w-5xl mx-auto mt-8 transition-all duration-300">
-      <header class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-          <span class="text-4xl">🧮</span> Batch Calculator
+    <style>
+      .font-inter { font-family: 'Inter', sans-serif; }
+      
+      /* Input Logic */
+      .input-container {
+        display: flex;
+        align-items: center;
+        background-color: #f8fafc; /* slate-50 */
+        border: 1px solid #e2e8f0; /* slate-200 */
+        border-radius: 0.75rem; /* rounded-xl */
+        transition: all 0.2s;
+      }
+      .input-container:focus-within {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        transform: translateY(-1px);
+      }
+      .input-container:focus-within .icon-slot { color: #3b82f6; }
+      
+      .naked-input {
+        flex: 1;
+        width: 100%;
+        background: transparent;
+        border: none;
+        padding: 0.875rem 0.5rem; /* py-3.5 */
+        outline: none;
+        color: #1e293b;
+        font-weight: 500;
+      }
+      /* Remove number spinners */
+      .naked-input::-webkit-outer-spin-button,
+      .naked-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      @keyframes flash-success {
+        0% { background-color: rgba(34, 197, 94, 0.2); }
+        100% { background-color: transparent; }
+      }
+      .flash-highlight { animation: flash-success 1s ease-out; }
+    </style>
+
+    <section class="font-inter max-w-6xl mx-auto mt-10 px-4 mb-20">
+      
+      <div class="text-center mb-10">
+        <h2 class="text-4xl font-extrabold text-slate-800 tracking-tight mb-2">
+          Batch Profit Calculator
         </h2>
-        
-      </header>
-      <p class="text-base text-gray-500 mb-8">Calculate profits for your pastry batches with a modern, intuitive interface.</p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Batch Details Form -->
-        <div class="bg-white rounded-xl shadow p-6 flex flex-col gap-6">
-          <h3 class="font-semibold text-xl mb-2">Batch Details</h3>
-          <form id="batch-form" class="space-y-5" autocomplete="off">
-            <div>
-              <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">Cost per Unit (₹)</label>
-              <input type="number" id="cost" placeholder="e.g. 20" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition" min="0.01" step="0.01" required />
-              <small class="text-gray-400">Enter the cost to make one unit.</small>
-            </div>
-            <div>
-              <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Selling Price per Unit (₹)</label>
-              <input type="number" id="price" placeholder="e.g. 50" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition" min="0.01" step="0.01" required />
-              <small class="text-gray-400">How much you sell one unit for.</small>
-            </div>
-            <div>
-              <label for="qty" class="block text-sm font-medium text-gray-700 mb-1">Quantity per Batch</label>
-              <input type="number" id="qty" placeholder="e.g. 12" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition" min="1" step="1" required />
-              <small class="text-gray-400">How many units in one batch.</small>
-            </div>
-            <div id="form-error" class="text-red-500 text-sm hidden"></div>
-            <div class="flex gap-4">
-              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg w-full font-semibold flex items-center justify-center gap-2 transition">
-                <span>Calculate</span>
-              </button>
-              <button type="button" id="reset-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-lg w-full font-semibold flex items-center justify-center gap-2 transition">
-                <span>Reset</span>
-              </button>
-            </div>
-          </form>
-        </div>
-        <!-- Calculation Results -->
-        <div class="bg-white rounded-xl shadow p-6 flex flex-col gap-6">
-          <h3 class="font-semibold text-xl mb-2">Calculation Results</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg shadow flex flex-col items-start">
-              <p class="text-sm font-medium text-blue-700">Total Revenue</p>
-              <p id="revenue" class="text-2xl font-bold text-blue-900 mt-1">₹0.00</p>
-            </div>
-            <div class="bg-red-50 p-4 rounded-lg shadow flex flex-col items-start">
-              <p class="text-sm font-medium text-red-700">Total Cost</p>
-              <p id="costs" class="text-2xl font-bold text-red-900 mt-1">₹0.00</p>
-            </div>
-            <div id="grossProfitTile" class="bg-green-50 p-4 rounded-lg shadow flex flex-col items-start transition-colors duration-300">
-              <p class="text-sm font-medium text-green-700">Gross Profit</p>
-              <p id="profit" class="text-2xl font-bold text-green-900 mt-1">₹0.00</p>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg shadow flex flex-col items-start">
-              <p class="text-sm font-medium text-purple-700">Profit Margin</p>
-              <p id="margin" class="text-2xl font-bold text-purple-900 mt-1">0.00%</p>
-            </div>
-          </div>
-          <button id="save-preset-btn" class="mt-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-3 rounded-lg w-full font-semibold flex items-center justify-center gap-2 transition hover:scale-105">
-            <span>Save as Preset</span>
-          </button>
-          <div id="save-loading" class="hidden mt-2 flex items-center gap-2 text-gray-500 text-sm animate-pulse">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-              <path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" stroke="currentColor" stroke-width="2" />
-            </svg>
-            <span>Saving...</span>
-          </div>
-        </div>
+        <p class="text-slate-500 text-lg">Optimize your pastry margins with precision.</p>
       </div>
-      <!-- Toggle for Preset List Section -->
-<div class="mt-12">
-  <!-- Modern Toggle Button -->
-  <button id="toggle-presets-btn" class="flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold shadow-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" aria-expanded="false" aria-controls="preset-section">
-    <span id="toggle-icon" class="transition-transform duration-300">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path id="toggle-arrow" stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-      </svg>
-    </span>
-    <span id="toggle-text">Show Common Batches</span>
-  </button>
-  <!-- Preset Section (hidden by default) -->
-  <div id="preset-section" class="transition-all duration-300 overflow-hidden" style="max-height:0; opacity:0;">
-    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">📌 Common Batches</h3>
-    <div id="preset-loading" class="hidden flex items-center gap-2 text-gray-500 text-sm mb-2 animate-pulse">
-      <!-- ... -->
-    </div>
-    <div class="mb-3 flex items-center gap-3">
-  <input
-    id="preset-search"
-    type="text"
-    placeholder="Search batches..."
-    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
-  />
-  <button id="clear-search" class="px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800">
-    Clear
-  </button>
-</div>
-<div
-  id="preset-list"
-  class="divide-y divide-gray-200 bg-white rounded-xl border shadow-sm"
-  style="max-height: 280px; overflow-y: auto;"
-></div>
 
-  </div>
-</div>
-              <style>
-        /* Global smooth scroll */
-        html {
-          scroll-behavior: smooth;
-        }
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <h3 class="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"></path></svg>
+              Batch Details
+            </h3>
+            
+            <form id="batch-form" class="space-y-6" autocomplete="off">
+              
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cost to Produce</label>
+                <div class="input-container">
+                  <div class="pl-4 pr-1 icon-slot text-slate-400 font-semibold select-none">₹</div>
+                  <input type="number" id="cost" placeholder="20.00" class="naked-input" min="0.01" step="0.01" required />
+                  <div class="pr-4 pl-2 text-xs text-slate-400 font-medium select-none whitespace-nowrap">per unit</div>
+                </div>
+              </div>
 
-        /* Brief highlight to draw attention to updated fields */
-        .flash-highlight {
-          animation: flash-bg 900ms ease-in-out 1;
-        }
-        @keyframes flash-bg {
-          0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); background-color: rgba(219,234,254,0.6); }
-          100% { box-shadow: none; background-color: transparent; }
-        }
-      </style>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Selling Price</label>
+                <div class="input-container">
+                  <div class="pl-4 pr-1 icon-slot text-slate-400 font-semibold select-none">₹</div>
+                  <input type="number" id="price" placeholder="50.00" class="naked-input" min="0.01" step="0.01" required />
+                  <div class="pr-4 pl-2 text-xs text-slate-400 font-medium select-none whitespace-nowrap">per unit</div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Batch Quantity</label>
+                <div class="input-container">
+                  <div class="pl-4 pr-1 icon-slot text-slate-400 select-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                  </div>
+                  <input type="number" id="qty" placeholder="12" class="naked-input" min="1" step="1" required />
+                  <div class="pr-2 pl-2 text-xs text-slate-400 font-medium select-none whitespace-nowrap">units</div>
+                </div>
+              </div>
+
+              <div id="form-error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm hidden flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span id="error-msg"></span>
+              </div>
+
+              <div class="flex gap-3 pt-2">
+                <button 
+                  type="submit" 
+                  class="flex-1 bg-slate-900 text-white py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-slate-700 hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex justify-center items-center gap-2"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Calculate
+                </button>
+                <button type="button" id="reset-btn" class="px-6 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 py-3.5 rounded-xl font-semibold transition-colors">
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="mt-8">
+            <button id="toggle-presets-btn" class="w-full group flex items-center justify-between px-6 py-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 transition-all shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div class="text-left">
+                  <span class="block font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">Saved Batches</span>
+                  <span class="block text-xs text-slate-400" id="toggle-status">Click to view library</span>
+                </div>
+              </div>
+              <svg id="toggle-arrow" class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+
+            <div id="preset-section" class="overflow-hidden transition-all duration-500 ease-in-out" style="max-height:0; opacity:0;">
+              <div class="bg-white border-x border-b border-slate-200 rounded-b-xl p-4 shadow-inner bg-slate-50/50">
+                
+                <div class="input-container bg-white mb-4">
+                  <div class="pl-3 pr-2 text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  </div>
+                  <input id="preset-search" type="text" placeholder="Search saved batches..." class="naked-input py-2.5" />
+                </div>
+
+                <div id="preset-loading" class="hidden py-6 flex flex-col items-center justify-center space-y-3">
+                  <div class="relative">
+                     <div class="absolute inset-0 bg-blue-500 rounded-full blur-md opacity-20 animate-pulse"></div>
+                     <img src="assets/Flowr Logo.png" class="relative w-8 h-8 rounded-full animate-breath shadow-sm">
+                  </div>
+                  <p class="text-xs text-slate-400 font-medium animate-pulse">Loading batches...</p>
+                </div>
+
+                <div id="preset-list" class="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-6">
+          
+          <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sticky top-8">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Financials</h3>
+            
+            <div id="grossProfitTile" class="relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 bg-slate-50 border border-slate-100">
+              <div class="relative z-10">
+                <p class="text-sm font-medium text-slate-500 mb-1">Total Gross Profit</p>
+                <div class="flex items-baseline gap-2">
+                  <h2 id="profit" class="text-4xl font-extrabold text-slate-900 tracking-tight">₹0.00</h2>
+                </div>
+              </div>
+              <div class="absolute -right-4 -top-4 w-24 h-24 bg-current opacity-10 rounded-full blur-xl"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Revenue</p>
+                <p id="revenue" class="text-lg font-bold text-slate-700">₹0.00</p>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Total Cost</p>
+                <p id="costs" class="text-lg font-bold text-slate-700">₹0.00</p>
+              </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-xl p-5 text-white flex items-center justify-between">
+              <div>
+                <p class="text-xs text-slate-400 uppercase font-bold">Profit Margin</p>
+                <p id="margin" class="text-2xl font-bold mt-1">0.00%</p>
+              </div>
+              <div class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+              </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100">
+              <button id="save-preset-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 font-medium hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group">
+                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                <span>Save this Batch</span>
+              </button>
+               
+               <div id="save-loading" class="hidden mt-4 flex items-center justify-center gap-2">
+                 <div class="relative w-4 h-4">
+                   <div class="absolute inset-0 bg-blue-500 rounded-full blur-sm opacity-30 animate-pulse"></div>
+                   <img src="assets/Flowr Logo.png" class="relative w-full h-full rounded-full animate-breath">
+                 </div>
+                 <span class="text-xs text-blue-500 font-medium">Saving to library...</span>
+               </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
     </section>
   `;
 
+  // --- Logic Implementation ---
+  
+  const db = window.db; 
 
-
-  // Reference to the database (assumed to be set up elsewhere)
-  const db = window.db;
-
-  // Helper functions for UI feedback
+  // UI Helpers
   const showError = (msg) => {
     const errorDiv = document.getElementById("form-error");
-    errorDiv.innerText = msg;
+    const errorMsg = document.getElementById("error-msg");
+    errorMsg.innerText = msg;
     errorDiv.classList.remove("hidden");
-    errorDiv.classList.add("animate-shake");
-    setTimeout(() => errorDiv.classList.remove("animate-shake"), 500);
+    errorDiv.classList.remove("animate-pulse");
+    void errorDiv.offsetWidth; 
+    errorDiv.classList.add("animate-pulse");
   };
+  
   const hideError = () => {
-    const errorDiv = document.getElementById("form-error");
-    errorDiv.innerText = "";
-    errorDiv.classList.add("hidden");
-  };
-  const setProfitTileColor = (profit) => {
-    const tile = document.getElementById("grossProfitTile");
-    tile.classList.remove("bg-green-50", "bg-red-50", "bg-yellow-50");
-    if (profit > 0) tile.classList.add("bg-green-50");
-    else if (profit < 0) tile.classList.add("bg-red-50");
-    else tile.classList.add("bg-yellow-50");
+    document.getElementById("form-error").classList.add("hidden");
   };
 
-  // Calculation logic, called on input and submit
+  const setProfitTileColor = (profit) => {
+    const tile = document.getElementById("grossProfitTile");
+    const profitText = document.getElementById("profit");
+    
+    // Clean classes
+    tile.className = "relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 border";
+    profitText.className = "text-4xl font-extrabold tracking-tight";
+
+    if (profit > 0) {
+      tile.classList.add("bg-green-50", "border-green-100", "text-green-500");
+      profitText.classList.add("text-green-700");
+    } else if (profit < 0) {
+      tile.classList.add("bg-red-50", "border-red-100", "text-red-500");
+      profitText.classList.add("text-red-700");
+    } else {
+      tile.classList.add("bg-slate-50", "border-slate-100", "text-slate-500");
+      profitText.classList.add("text-slate-900");
+    }
+  };
+
   const calculateAndDisplay = () => {
     const cost = parseFloat(document.getElementById("cost").value);
     const price = parseFloat(document.getElementById("price").value);
     const qty = parseFloat(document.getElementById("qty").value);
 
-    if (isNaN(cost) || isNaN(price) || isNaN(qty) || cost <= 0 || price <= 0 || qty <= 0) {
-      showError("Please enter valid positive numbers for all fields.");
-      document.getElementById("revenue").innerText = `₹0.00`;
-      document.getElementById("costs").innerText = `₹0.00`;
-      document.getElementById("profit").innerText = `₹0.00`;
-      document.getElementById("margin").innerText = `0.00%`;
-      setProfitTileColor(0);
-      return false;
+    if (isNaN(cost) || isNaN(price) || isNaN(qty)) {
+        document.getElementById("revenue").innerText = `₹0.00`;
+        document.getElementById("costs").innerText = `₹0.00`;
+        document.getElementById("profit").innerText = `₹0.00`;
+        document.getElementById("margin").innerText = `0.00%`;
+        setProfitTileColor(0);
+        return false;
     }
+
+    if (cost <= 0 || price <= 0 || qty <= 0) return false;
+
     hideError();
 
     const totalRevenue = price * qty;
@@ -201,7 +327,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return { cost, price, qty, profit };
   };
 
-  // Reset form and results
   const resetFormAndResults = () => {
     document.getElementById("batch-form").reset();
     document.getElementById("revenue").innerText = `₹0.00`;
@@ -212,36 +337,28 @@ document.addEventListener("DOMContentLoaded", () => {
     hideError();
   };
 
-  // Event listeners
+  // Listeners
   document.getElementById("reset-btn").addEventListener("click", resetFormAndResults);
-
-  // Calculate on form submit
+  
   document.getElementById("batch-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    calculateAndDisplay();
+    const cost = parseFloat(document.getElementById("cost").value);
+    const price = parseFloat(document.getElementById("price").value);
+    const qty = parseFloat(document.getElementById("qty").value);
+    
+    if (isNaN(cost) || isNaN(price) || isNaN(qty) || cost <= 0 || price <= 0 || qty <= 0) {
+      showError("Please enter valid positive numbers.");
+    } else {
+      calculateAndDisplay();
+    }
   });
 
-  // Auto-calculate on input change
   ["cost", "price", "qty"].forEach(id => {
     document.getElementById(id).addEventListener("input", calculateAndDisplay);
   });
 
-  // Preset management
-  const showPresetLoading = () => {
-    document.getElementById("preset-loading").classList.remove("hidden");
-  };
-  const hidePresetLoading = () => {
-    document.getElementById("preset-loading").classList.add("hidden");
-  };
-  const showSaveLoading = () => {
-    document.getElementById("save-loading").classList.remove("hidden");
-  };
-  const hideSaveLoading = () => {
-    document.getElementById("save-loading").classList.add("hidden");
-  };
+  // --- Preset Logic (Refined) ---
 
-  // Load and display presets
-    // Compact list + search cache
   let cachedPresets = [];
 
   function renderPresetList(items) {
@@ -249,249 +366,160 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!presetList) return;
 
     if (!items.length) {
-      presetList.innerHTML = `<p class="p-4 text-sm text-gray-500">No saved batches${cachedPresets.length ? " match your search." : " yet."}</p>`;
+      presetList.innerHTML = `
+        <div class="text-center py-6">
+          <p class="text-sm text-slate-400">No batches found.</p>
+        </div>`;
       return;
     }
 
-    presetList.innerHTML = items
-      .map(d => {
-        const safeId = d.__id;
-        const name = d.name;
-        const cost = Number(d.cost).toFixed(2);
-        const price = Number(d.price).toFixed(2);
-        const qty = Number(d.qty);
-
-        return `
-          <div class="flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer group" onclick='window.applyPreset(${JSON.stringify({ cost: d.cost, price: d.price, qty: d.qty })});'>
-            <div class="min-w-0">
-              <span class="font-medium text-gray-900 truncate group-hover:underline" title="${name}">${name}</span>
-              <div class="text-xs text-gray-500 mt-0.5">₹${price} • ₹${cost} • qty ${qty}</div>
+    presetList.innerHTML = items.map(d => {
+      const safeId = d.__id;
+      return `
+        <div class="group relative flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer relative-dropdown"
+             onclick='window.applyPreset(${JSON.stringify({ cost: d.cost, price: d.price, qty: d.qty })});'>
+          
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="h-10 w-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm shrink-0">
+               ${d.name ? d.name.charAt(0).toUpperCase() : '#'}
             </div>
-            <div class="relative ml-4" onclick="event.stopPropagation();">
-              <button onclick="toggleDropdown('${safeId}');" class="p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" title="More actions">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="5" r="1.5"></circle>
-                  <circle cx="12" cy="12" r="1.5"></circle>
-                  <circle cx="12" cy="19" r="1.5"></circle>
-                </svg>
-              </button>
-              <div id="dropdown-${safeId}" class="hidden absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg z-10">
-                <button class="flex items-center w-full px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50 rounded-lg"
-                        onclick='editPreset("${safeId}", ${JSON.stringify(d)}); closeDropdown("${safeId}");'>
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/>
-                  </svg>
+            <div class="min-w-0">
+              <h4 class="font-semibold text-slate-800 text-sm truncate pr-2 group-hover:text-blue-700 transition-colors">${d.name}</h4>
+              <p class="text-xs text-slate-500 truncate">₹${d.price} sell • ₹${d.cost} cost</p>
+            </div>
+          </div>
+
+          <div class="relative ml-2" onclick="event.stopPropagation();">
+            <button onclick="window.toggleDropdown('${safeId}')" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+            </button>
+            <div id="dropdown-${safeId}" class="hidden absolute right-0 mt-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl z-20 transform transition-all duration-200 origin-top-right opacity-0 scale-95">
+              <div class="py-1">
+                <button onclick='editPreset("${safeId}", ${JSON.stringify(d)})' class="flex w-full items-center px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600">
                   Edit
                 </button>
-                <button class="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg"
-                        onclick='deletePreset("${safeId}", "${name}"); closeDropdown("${safeId}");'>
-                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
+                <button onclick='deletePreset("${safeId}", "${d.name}")' class="flex w-full items-center px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50">
                   Delete
                 </button>
               </div>
             </div>
           </div>
-        `;
-      })
-      .join("");
+        </div>
+      `;
+    }).join("");
   }
 
   async function loadPresets() {
-    showPresetLoading();
+    document.getElementById("preset-loading").classList.remove("hidden");
     const presetList = document.getElementById("preset-list");
-    if (presetList) presetList.innerHTML = "";
-
+    presetList.innerHTML = "";
+    
     try {
       const snapshot = await db.collection("batchPresets").orderBy("createdAt", "desc").get();
       cachedPresets = [];
       snapshot.forEach(doc => {
-        const d = doc.data();
-        cachedPresets.push({ __id: doc.id, ...d });
+        cachedPresets.push({ __id: doc.id, ...doc.data() });
       });
       renderPresetList(cachedPresets);
     } catch (e) {
-      if (presetList) {
-        presetList.innerHTML = `<p class='p-4 text-sm text-red-500'>Failed to load presets.</p>`;
-      }
+      console.error(e);
+      presetList.innerHTML = `<p class='text-center text-xs text-red-400 py-4'>Error loading presets.</p>`;
     }
-    hidePresetLoading();
+    document.getElementById("preset-loading").classList.add("hidden");
   }
 
-  // Search wiring
-  const presetSearch = document.getElementById("preset-search");
-  const clearSearchBtn = document.getElementById("clear-search");
-
-  function applyFilter() {
-    const q = (presetSearch?.value || "").trim().toLowerCase();
-    if (!q) {
-      renderPresetList(cachedPresets);
-      return;
-    }
-    const filtered = cachedPresets.filter(p =>
-      (p.name || "").toLowerCase().includes(q)
-      || String(p.price).includes(q)
-      || String(p.cost).includes(q)
-      || String(p.qty).includes(q)
+  document.getElementById("preset-search").addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    if(!q) return renderPresetList(cachedPresets);
+    const filtered = cachedPresets.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) || String(p.price).includes(q)
     );
     renderPresetList(filtered);
-  }
-
-  if (presetSearch) {
-    presetSearch.addEventListener("input", applyFilter);
-  }
-  if (clearSearchBtn) {
-    clearSearchBtn.addEventListener("click", () => {
-      if (!presetSearch) return;
-      presetSearch.value = "";
-      applyFilter();
-      presetSearch.focus();
-    });
-  }
-
-
-  // Save as preset
-  document.getElementById("save-preset-btn").addEventListener("click", async () => {
-    const cost = parseFloat(document.getElementById("cost").value);
-    const price = parseFloat(document.getElementById("price").value);
-    const qty = parseFloat(document.getElementById("qty").value);
-
-    if (isNaN(cost) || isNaN(price) || isNaN(qty) || cost <= 0 || price <= 0 || qty <= 0) {
-      showError("Please enter valid batch details before saving as a preset.");
-      return;
-    }
-    hideError();
-
-    const name = prompt("Label this batch (e.g., Brownie ₹50):");
-    if (!name) return;
-
-    showSaveLoading();
-    await db.collection("batchPresets").add({ name, cost, price, qty, createdAt: new Date() });
-    hideSaveLoading();
-    loadPresets();
   });
 
-    // Apply preset to form + smooth scroll + visual cue
-    window.applyPreset = (data) => {
+  document.getElementById("save-preset-btn").addEventListener("click", async () => {
+    const res = calculateAndDisplay();
+    if (!res) {
+      showError("Fill in valid data first.");
+      return;
+    }
+    const name = prompt("Name this batch preset (e.g. 'Chocolate Croissant'):");
+    if (!name) return;
+
+    document.getElementById("save-loading").classList.remove("hidden");
+    await db.collection("batchPresets").add({ 
+      name, 
+      cost: res.cost, 
+      price: res.price, 
+      qty: res.qty, 
+      createdAt: new Date() 
+    });
+    document.getElementById("save-loading").classList.add("hidden");
+    
+    if (presetsVisible) loadPresets();
+    else {
+      document.getElementById("toggle-presets-btn").click();
+    }
+  });
+
+  window.applyPreset = (data) => {
     const costEl = document.getElementById("cost");
     const priceEl = document.getElementById("price");
     const qtyEl = document.getElementById("qty");
-    const formEl = document.getElementById("batch-form");
-    const presetSectionEl = document.getElementById("preset-section");
-
-    // Set values
+    
     costEl.value = data.cost;
     priceEl.value = data.price;
     qtyEl.value = data.qty;
-
-    // Recalculate first
+    
     calculateAndDisplay();
-
-    // Collapse presets to reduce page height (prevents jumpy scroll)
-    if (presetSectionEl && presetSectionEl.style.maxHeight !== "0") {
-      hidePresets();
-    }
-
-    // Smooth scroll to form (use window scrollTo with offset for reliability)
-    if (formEl) {
-            const scroller = document.scrollingElement || document.documentElement;
-      const rect = formEl.getBoundingClientRect();
-      const targetY = window.scrollY + rect.top - 16;
-      scroller.scrollTo({ top: targetY, behavior: "smooth" });
-
-    }
-
-    // Highlight fields
+    
+    // Highlight Parent Container
     [costEl, priceEl, qtyEl].forEach(el => {
-      el.classList.remove("flash-highlight");
-      void el.offsetWidth;
-      el.classList.add("flash-highlight");
+      const parent = el.closest('.input-container');
+      parent.classList.add('bg-blue-50', 'border-blue-300');
+      setTimeout(() => parent.classList.remove('bg-blue-50', 'border-blue-300'), 500);
     });
 
-    costEl.focus();
+    window.scrollTo({ top: document.getElementById("batchCalculator").offsetTop - 20, behavior: 'smooth' });
   };
 
-
-
-  // Delete preset with confirmation
   window.deletePreset = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete the preset "${name}"?`)) return;
-    await db.collection("batchPresets").doc(id).delete();
-    loadPresets();
-  };
-
-  // Edit preset (name, cost, price, qty)
-  window.editPreset = async (id, data) => {
-    const newName = prompt("Edit batch label:", data.name) || data.name;
-    const newCost = parseFloat(prompt("Edit cost per unit (₹):", data.cost)) || data.cost;
-    const newPrice = parseFloat(prompt("Edit selling price per unit (₹):", data.price)) || data.price;
-    const newQty = parseInt(prompt("Edit quantity per batch:", data.qty)) || data.qty;
-    if (newCost <= 0 || newPrice <= 0 || newQty <= 0) {
-      alert("Invalid values. Edit cancelled.");
-      return;
+    if(confirm(`Delete "${name}"?`)) {
+      await db.collection("batchPresets").doc(id).delete();
+      loadPresets();
     }
-    await db.collection("batchPresets").doc(id).update({
-      name: newName,
-      cost: newCost,
-      price: newPrice,
-      qty: newQty
-    });
+  };
+
+  window.editPreset = async (id, d) => {
+    const name = prompt("Name:", d.name) || d.name;
+    const cost = parseFloat(prompt("Cost:", d.cost)) || d.cost;
+    const price = parseFloat(prompt("Price:", d.price)) || d.price;
+    const qty = parseFloat(prompt("Qty:", d.qty)) || d.qty;
+    
+    await db.collection("batchPresets").doc(id).update({ name, cost, price, qty });
     loadPresets();
   };
 
-  // Helper to close dropdown after action
-  window.closeDropdown = function(id) {
-    const dropdown = document.getElementById(`dropdown-${id}`);
-    if (dropdown) dropdown.classList.add('hidden');
-  };
+  const toggleBtn = document.getElementById("toggle-presets-btn");
+  const presetSection = document.getElementById("preset-section");
+  const toggleArrow = document.getElementById("toggle-arrow");
+  const toggleStatus = document.getElementById("toggle-status");
+  let presetsVisible = false;
 
-  // --- Modern Toggle Logic for Preset Section ---
-const toggleBtn = document.getElementById("toggle-presets-btn");
-const presetSection = document.getElementById("preset-section");
-const toggleText = document.getElementById("toggle-text");
-const toggleIcon = document.getElementById("toggle-icon");
-const toggleArrow = document.getElementById("toggle-arrow");
-
-let presetsVisible = false; // Hidden by default
-
-function showPresets() {
-  toggleText.textContent = "Hide Common Batches";
-  toggleBtn.setAttribute("aria-expanded", "true");
-  toggleArrow.setAttribute("d", "M19 15l-7-7-7 7"); // Up arrow
-  presetsVisible = true;
-  // 1. Load presets, then expand after content is rendered
-  loadPresets().then(() => {
-    // Use setTimeout to ensure DOM updates before measuring height
-    setTimeout(() => {
-      presetSection.style.maxHeight = presetSection.scrollHeight + "px";
+  toggleBtn.addEventListener("click", () => {
+    presetsVisible = !presetsVisible;
+    if (presetsVisible) {
+      presetSection.style.maxHeight = "500px";
       presetSection.style.opacity = "1";
-    }, 10);
+      toggleArrow.style.transform = "rotate(180deg)";
+      toggleStatus.innerText = "Click to close library";
+      loadPresets();
+    } else {
+      presetSection.style.maxHeight = "0";
+      presetSection.style.opacity = "0";
+      toggleArrow.style.transform = "rotate(0deg)";
+      toggleStatus.innerText = "Click to view library";
+    }
   });
-}
-
-
-function hidePresets() {
-  presetSection.style.maxHeight = "0";
-  presetSection.style.opacity = "0";
-  toggleText.textContent = "Show Common Batches";
-  toggleBtn.setAttribute("aria-expanded", "false");
-  toggleArrow.setAttribute("d", "M19 9l-7 7-7-7"); // Down arrow
-  presetsVisible = false;
-}
-
-toggleBtn.addEventListener("click", () => {
-  if (presetsVisible) {
-    hidePresets();
-  } else {
-    showPresets();
-  }
-});
-
-// Hide on load
-hidePresets();
-
-// Initial load (presets only when shown)
-// loadPresets(); <-- now called only when shown
 
 });
