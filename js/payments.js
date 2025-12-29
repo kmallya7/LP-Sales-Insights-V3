@@ -2,6 +2,7 @@
 /**
  * payments.js
  * Logic: Monthly Statement + Calibration + Spaced UI Tabs + Aesthetic UI
+ * Updated: Dark Mode Support
  */
 
 // Global state
@@ -23,22 +24,22 @@ window.renderPaymentsTable = async function() {
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   container.innerHTML = `
-    <div id="payment-loading" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-md hidden transition-opacity duration-300">
+    <div id="payment-loading" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md hidden transition-opacity duration-300">
       <div class="relative w-16 h-16 mb-4">
          <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
          <img src="assets/Flowr Logo.png" class="relative w-full h-full rounded-full animate-breath shadow-lg">
       </div>
-      <p class="text-sm text-slate-500 font-semibold animate-pulse tracking-wide">Reconciling Ledger...</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400 font-semibold animate-pulse tracking-wide">Reconciling Ledger...</p>
     </div>
 
     <div class="max-w-7xl mx-auto flex flex-col gap-8 px-4 md:px-8 py-8 animate-fade-in">
       
-      <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 border-b border-slate-200 pb-6">
+      <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-6">
         <div>
-          <h1 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-            <i data-feather="book" class="w-6 h-6 text-blue-600"></i> Financial Ledger
+          <h1 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+            <i data-feather="book" class="w-6 h-6 text-blue-600 dark:text-blue-500"></i> Financial Ledger
           </h1>
-          <p class="text-slate-500 text-sm mt-1">Monthly Statement & Carry-over Tracking.</p>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Monthly Statement & Carry-over Tracking.</p>
         </div>
         
         <div class="flex items-center gap-3">
@@ -47,11 +48,11 @@ window.renderPaymentsTable = async function() {
                <i data-feather="calendar" class="h-4 w-4 text-slate-400 group-hover:text-blue-500 transition"></i>
              </div>
              <input type="month" id="ledgerMonthFilter" value="${currentMonth}" 
-                    class="pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-300 transition"
+                    class="pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-300 transition"
                     onchange="refreshLedgerData()">
           </div>
 
-          <button onclick="openPaymentModal()" class="group bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-slate-200 flex items-center gap-2 transition-all text-sm font-medium hover:-translate-y-0.5">
+          <button onclick="openPaymentModal()" class="group bg-slate-800 dark:bg-blue-600 hover:bg-slate-900 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-slate-200 dark:shadow-none flex items-center gap-2 transition-all text-sm font-medium hover:-translate-y-0.5">
             <i data-feather="plus-circle" class="w-4 h-4 text-slate-300 group-hover:text-white transition"></i>
             Record Payment
           </button>
@@ -59,50 +60,50 @@ window.renderPaymentsTable = async function() {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
+          <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
             <i data-feather="file-text" class="w-3 h-3"></i> Total Billed (Month)
           </p>
           <div class="mt-2 flex items-baseline gap-2">
-            <h2 class="text-2xl font-bold text-slate-800" id="statMonthlyBilled">₹0.00</h2>
-            <span class="text-xs text-indigo-500 font-medium bg-indigo-50 px-2 py-0.5 rounded-full">Daily Logs</span>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white" id="statMonthlyBilled">₹0.00</h2>
+            <span class="text-xs text-indigo-500 dark:text-indigo-400 font-medium bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">Daily Logs</span>
           </div>
         </div>
         
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
+          <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
             <i data-feather="check-circle" class="w-3 h-3"></i> Collected (Month)
           </p>
           <div class="mt-2 flex items-baseline gap-2">
-            <h2 class="text-2xl font-bold text-emerald-600" id="statMonthlyCollected">₹0.00</h2>
-            <span class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Received</span>
+            <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400" id="statMonthlyCollected">₹0.00</h2>
+            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">Received</span>
           </div>
         </div>
 
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+        <div class="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between transition hover:-translate-y-1 hover:shadow-md">
+          <p class="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
             <i data-feather="alert-circle" class="w-3 h-3"></i> Total Pending (All Time)
           </p>
           <div class="mt-2 flex items-baseline gap-2">
-            <h2 class="text-2xl font-bold text-rose-600" id="statTotalOutstanding">₹0.00</h2>
-            <span class="text-xs text-rose-600 font-medium bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">To Collect</span>
+            <h2 class="text-2xl font-bold text-rose-600 dark:text-rose-400" id="statTotalOutstanding">₹0.00</h2>
+            <span class="text-xs text-rose-600 dark:text-rose-400 font-medium bg-rose-50 dark:bg-rose-900/30 px-2 py-0.5 rounded-full border border-rose-100 dark:border-rose-900">To Collect</span>
           </div>
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm min-h-[500px] flex flex-col">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm min-h-[500px] flex flex-col">
         
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
-          <div class="inline-flex p-1 bg-slate-100 border border-slate-200 rounded-xl gap-1">
-            <button id="tabBalances" onclick="switchPaymentTab('balances')" class="px-5 py-2 text-sm font-bold rounded-lg shadow-sm bg-white text-slate-800 transition-all border border-slate-100 ring-1 ring-black/5">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-xl">
+          <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl gap-1">
+            <button id="tabBalances" onclick="switchPaymentTab('balances')" class="px-5 py-2 text-sm font-bold rounded-lg shadow-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-white transition-all border border-slate-100 dark:border-slate-600 ring-1 ring-black/5">
               Monthly Statement
             </button>
-            <button id="tabHistory" onclick="switchPaymentTab('history')" class="px-5 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all">
+            <button id="tabHistory" onclick="switchPaymentTab('history')" class="px-5 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all">
               Payment Log
             </button>
           </div>
 
-          <div class="text-xs text-slate-400 italic hidden sm:flex items-center gap-1">
+          <div class="text-xs text-slate-400 dark:text-slate-500 italic hidden sm:flex items-center gap-1">
             <i data-feather="info" class="w-3 h-3"></i> Click "Previous Due" amounts to calibrate
           </div>
         </div>
@@ -122,22 +123,22 @@ window.renderPaymentsTable = async function() {
 function getModalsHTML() {
   return `
     <div id="paymentModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-95 opacity-0 border border-white/20" id="paymentModalContent">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-95 opacity-0 border border-white/20 dark:border-slate-700" id="paymentModalContent">
         <div class="flex justify-between items-start mb-6">
           <div>
-            <h3 class="text-xl font-bold text-slate-800">Record Payment</h3>
-            <p class="text-xs text-slate-500 mt-1">Log money received from a client.</p>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white">Record Payment</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Log money received from a client.</p>
           </div>
-          <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition">
+          <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full transition">
             <i data-feather="x" class="w-4 h-4"></i>
           </button>
         </div>
         <form id="paymentForm" onsubmit="handlePaymentSubmit(event)">
           <div class="space-y-5">
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Client</label>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Client</label>
               <div class="relative">
-                <select id="payClientSelect" required class="w-full appearance-none text-sm border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-slate-700 font-medium">
+                <select id="payClientSelect" required class="w-full appearance-none text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition text-slate-700 dark:text-white font-medium">
                     <option value="">Loading...</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
@@ -148,26 +149,26 @@ function getModalsHTML() {
             
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Amount</label>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Amount</label>
                 <div class="relative">
                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                      <span class="text-slate-400 font-semibold">₹</span>
                    </div>
                    <input type="number" id="payAmount" required min="1" step="0.01" 
-                          class="w-full text-sm border border-slate-200 bg-slate-50 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-slate-800" 
+                          class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-slate-800 dark:text-white" 
                           placeholder="0.00">
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Date</label>
-                <input type="date" id="payDate" required class="w-full text-sm border border-slate-200 bg-slate-50 rounded-xl px-3 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-600 font-medium">
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Date</label>
+                <input type="date" id="payDate" required class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-600 dark:text-slate-200 font-medium">
               </div>
             </div>
             
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Method</label>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Method</label>
               <div class="grid grid-cols-4 gap-2">
-                 <select id="payMethod" class="col-span-4 w-full text-sm border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
+                 <select id="payMethod" class="col-span-4 w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700 dark:text-white">
                     <option value="Cash">Cash</option>
                     <option value="UPI">UPI / GPay</option>
                     <option value="Bank Transfer">Bank Transfer</option>
@@ -176,28 +177,28 @@ function getModalsHTML() {
               </div>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Notes</label>
-              <textarea id="payNotes" rows="2" class="w-full text-sm border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-600 resize-none" placeholder="Reference No, etc."></textarea>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Notes</label>
+              <textarea id="payNotes" rows="2" class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-600 dark:text-slate-200 resize-none" placeholder="Reference No, etc."></textarea>
             </div>
           </div>
           <div class="mt-8 flex gap-3">
-             <button type="button" onclick="closePaymentModal()" class="flex-1 bg-white border border-slate-200 text-slate-600 py-3 rounded-xl text-sm font-bold hover:bg-slate-50 transition">Cancel</button>
-             <button type="submit" class="flex-1 bg-slate-900 text-white py-3 rounded-xl text-sm font-bold hover:bg-slate-800 shadow-lg shadow-slate-200 transition transform active:scale-95">Save Payment</button>
+             <button type="button" onclick="closePaymentModal()" class="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 py-3 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition">Cancel</button>
+             <button type="submit" class="flex-1 bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-blue-700 shadow-lg shadow-slate-200 dark:shadow-none transition transform active:scale-95">Save Payment</button>
           </div>
         </form>
       </div>
     </div>
     
     <div id="updateBilledModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100 border border-white/20">
-        <div class="flex items-center gap-3 mb-4 text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 transform transition-all scale-100 border border-white/20 dark:border-slate-700">
+        <div class="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-900/50">
             <i data-feather="tool" class="w-5 h-5"></i>
             <h3 class="text-sm font-bold uppercase tracking-wide">Calibrate Ledger</h3>
         </div>
         
-        <p class="text-xs text-slate-500 mb-6 leading-relaxed px-1">
-          The system calculated <strong>₹<span id="modalCurrentCalc" class="text-slate-800">0</span></strong> based on log history.
-          Enter the <span class="text-indigo-600 font-bold">True Amount</span> below if this is incorrect (e.g. older debts cleared).
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed px-1">
+          The system calculated <strong>₹<span id="modalCurrentCalc" class="text-slate-800 dark:text-white">0</span></strong> based on log history.
+          Enter the <span class="text-indigo-600 dark:text-indigo-400 font-bold">True Amount</span> below if this is incorrect (e.g. older debts cleared).
         </p>
         
         <input type="hidden" id="editBilledClientId">
@@ -206,12 +207,12 @@ function getModalsHTML() {
         <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">True Previous Due</label>
         <div class="relative mb-6">
             <span class="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">₹</span>
-            <input type="number" id="editBilledAmount" class="w-full text-3xl font-bold text-slate-800 border-b-2 border-slate-200 pl-6 py-2 focus:border-indigo-500 focus:outline-none transition bg-transparent placeholder-slate-200" placeholder="0.00">
+            <input type="number" id="editBilledAmount" class="w-full text-3xl font-bold text-slate-800 dark:text-white border-b-2 border-slate-200 dark:border-slate-600 pl-6 py-2 focus:border-indigo-500 focus:outline-none transition bg-transparent placeholder-slate-200 dark:placeholder-slate-700" placeholder="0.00">
         </div>
         
         <div class="flex gap-3">
-          <button onclick="document.getElementById('updateBilledModal').classList.add('hidden')" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl text-sm font-bold hover:bg-slate-200 transition">Cancel</button>
-          <button onclick="saveManualBilled()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition">Update</button>
+          <button onclick="document.getElementById('updateBilledModal').classList.add('hidden')" class="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 py-3 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition">Cancel</button>
+          <button onclick="saveManualBilled()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition">Update</button>
         </div>
       </div>
     </div>
@@ -317,9 +318,18 @@ async function refreshLedgerData() {
 
     updatePaymentStats(Object.values(ledgerMap));
     
-    const isHistory = document.getElementById('tabHistory').classList.contains('bg-white');
-    if(isHistory) renderPaymentHistoryTable();
-    else renderBalancesTable();
+    const isHistory = document.getElementById('tabHistory').classList.contains('bg-white') || document.getElementById('tabHistory').classList.contains('dark:bg-slate-700');
+    // Note: Dark mode logic for tab detection might need the class check to be broader or based on ID active state logic, 
+    // but typically the function switchPaymentTab handles class assignment. 
+    // We can rely on a simpler check or state if needed, but checking for the 'active' classes usually works.
+    
+    // Let's use a more robust check based on the 'active' styling convention we set in switchPaymentTab
+    const historyBtn = document.getElementById('tabHistory');
+    if(historyBtn.classList.contains('shadow-sm')) {
+       renderPaymentHistoryTable();
+    } else {
+       renderBalancesTable();
+    }
     
     updatePaymentModalDropdown();
     
@@ -362,8 +372,9 @@ window.switchPaymentTab = function(tabName) {
   const btnHistory = document.getElementById('tabHistory');
   
   // Style: Active = White Card + Shadow, Inactive = Transparent + Gray Text
-  const activeClass = "px-5 py-2 text-sm font-bold rounded-lg shadow-sm bg-white text-slate-800 transition-all border border-slate-100 ring-1 ring-black/5";
-  const inactiveClass = "px-5 py-2 text-sm font-medium rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all";
+  // Updated with Dark Mode Classes
+  const activeClass = "px-5 py-2 text-sm font-bold rounded-lg shadow-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-white transition-all border border-slate-100 dark:border-slate-600 ring-1 ring-black/5";
+  const inactiveClass = "px-5 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all";
 
   if (tabName === 'balances') {
     btnBalances.className = activeClass;
@@ -385,23 +396,23 @@ function renderBalancesTable() {
   let html = `
     <table class="w-full text-left border-collapse min-w-[900px]">
       <thead>
-        <tr class="text-xs text-slate-400 border-b border-slate-100 uppercase tracking-wider bg-slate-50/50">
+        <tr class="text-xs text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
           <th class="py-4 px-6 font-semibold w-1/4">Client</th>
-          <th class="py-4 px-6 font-semibold text-right text-slate-500">Previous Due</th>
-          <th class="py-4 px-6 font-semibold text-right text-indigo-900 bg-indigo-50/30">+ Billed (${monthLabel})</th>
-          <th class="py-4 px-6 font-semibold text-right text-emerald-900 bg-emerald-50/30">- Paid (${monthLabel})</th>
+          <th class="py-4 px-6 font-semibold text-right text-slate-500 dark:text-slate-400">Previous Due</th>
+          <th class="py-4 px-6 font-semibold text-right text-indigo-900 dark:text-indigo-300 bg-indigo-50/30 dark:bg-indigo-900/20">+ Billed (${monthLabel})</th>
+          <th class="py-4 px-6 font-semibold text-right text-emerald-900 dark:text-emerald-300 bg-emerald-50/30 dark:bg-emerald-900/20">- Paid (${monthLabel})</th>
           <th class="py-4 px-6 font-semibold text-right w-1/6">Total Pending</th>
           <th class="py-4 px-6 font-semibold text-right">Action</th>
         </tr>
       </thead>
-      <tbody class="text-slate-600 text-sm">
+      <tbody class="text-slate-600 dark:text-slate-300 text-sm">
   `;
 
   if (sortedLedger.length === 0) {
     html += `
         <tr><td colspan="6">
-            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
-               <div class="bg-slate-50 p-4 rounded-full mb-3 border border-slate-100">
+            <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+               <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-full mb-3 border border-slate-100 dark:border-slate-700">
                  <i data-feather="check-circle" class="w-8 h-8 opacity-30"></i>
                </div>
                <p class="text-sm font-medium">All balanced! No outstanding dues found.</p>
@@ -414,31 +425,31 @@ function renderBalancesTable() {
       const paid = c.monthPaid.toLocaleString('en-IN');
       const pending = c.totalPending.toLocaleString('en-IN');
       
-      let pendingClass = 'text-slate-600 font-bold';
-      if(c.totalPending > 1) pendingClass = 'text-rose-600 font-bold'; 
-      else if(c.totalPending < -1) pendingClass = 'text-indigo-600 font-bold';
+      let pendingClass = 'text-slate-600 dark:text-slate-300 font-bold';
+      if(c.totalPending > 1) pendingClass = 'text-rose-600 dark:text-rose-400 font-bold'; 
+      else if(c.totalPending < -1) pendingClass = 'text-indigo-600 dark:text-indigo-400 font-bold';
 
       html += `
-        <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition group">
-          <td class="py-4 px-6 font-medium text-slate-800">${c.name}</td>
+        <tr class="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition group">
+          <td class="py-4 px-6 font-medium text-slate-800 dark:text-slate-200">${c.name}</td>
           
           <td class="py-4 px-6 text-right">
-             <div class="cursor-pointer text-slate-500 border-b border-dashed border-slate-300 hover:text-indigo-600 hover:border-indigo-600 inline-block transition"
+             <div class="cursor-pointer text-slate-500 dark:text-slate-400 border-b border-dashed border-slate-300 dark:border-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-600 dark:hover:border-indigo-400 inline-block transition"
                   title="Click to Calibrate"
                   onclick="openCalibrationModal('${c.id}', ${c.previousDue}, ${c.pureHistory})">
                ₹${prevDue}
              </div>
           </td>
           
-          <td class="py-4 px-6 text-right bg-indigo-50/10 font-medium text-indigo-700">₹${billed}</td>
-          <td class="py-4 px-6 text-right bg-emerald-50/10 font-medium text-emerald-700">₹${paid}</td>
+          <td class="py-4 px-6 text-right bg-indigo-50/10 dark:bg-indigo-900/10 font-medium text-indigo-700 dark:text-indigo-400">₹${billed}</td>
+          <td class="py-4 px-6 text-right bg-emerald-50/10 dark:bg-emerald-900/10 font-medium text-emerald-700 dark:text-emerald-400">₹${paid}</td>
           
           <td class="py-4 px-6 text-right text-lg ${pendingClass}">
             ₹${pending}
           </td>
           
           <td class="py-4 px-6 text-right">
-            <button onclick="openPaymentModal('${c.id}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 px-4 py-2 rounded-lg text-xs font-bold transition border border-indigo-200 shadow-sm">
+            <button onclick="openPaymentModal('${c.id}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-800 dark:hover:text-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition border border-indigo-200 dark:border-indigo-800 shadow-sm">
               Pay
             </button>
           </td>
@@ -468,7 +479,7 @@ function renderPaymentHistoryTable() {
   let html = `
     <table class="w-full text-left border-collapse">
       <thead>
-        <tr class="text-xs text-slate-400 border-b border-slate-100 uppercase tracking-wider bg-slate-50/50">
+        <tr class="text-xs text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
           <th class="py-3 px-6 font-semibold">Date</th>
           <th class="py-3 px-6 font-semibold">Client</th>
           <th class="py-3 px-6 font-semibold">Method</th>
@@ -476,14 +487,14 @@ function renderPaymentHistoryTable() {
           <th class="py-3 px-6 font-semibold text-right">Action</th>
         </tr>
       </thead>
-      <tbody class="text-slate-600 text-sm">
+      <tbody class="text-slate-600 dark:text-slate-300 text-sm">
   `;
 
   if (filteredPayments.length === 0) {
     html += `
         <tr><td colspan="5">
-            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
-               <div class="bg-slate-50 p-4 rounded-full mb-3 border border-slate-100">
+            <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+               <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-full mb-3 border border-slate-100 dark:border-slate-700">
                  <i data-feather="credit-card" class="w-8 h-8 opacity-30"></i>
                </div>
                <p class="text-sm font-medium">No payments recorded in ${monthLabel}.</p>
@@ -492,15 +503,15 @@ function renderPaymentHistoryTable() {
   } else {
     filteredPayments.forEach(pay => {
       html += `
-        <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition">
-          <td class="py-3 px-6 text-slate-500 font-medium">${pay.date}</td>
-          <td class="py-3 px-6 font-bold text-slate-800">${pay.clientName}</td>
+        <tr class="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+          <td class="py-3 px-6 text-slate-500 dark:text-slate-400 font-medium">${pay.date}</td>
+          <td class="py-3 px-6 font-bold text-slate-800 dark:text-slate-200">${pay.clientName}</td>
           <td class="py-3 px-6">
-            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-500 shadow-sm">${pay.method}</span>
+            <span class="px-2.5 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-300 shadow-sm">${pay.method}</span>
           </td>
-          <td class="py-3 px-6 text-right font-bold text-emerald-600 bg-emerald-50/10">+₹${(parseFloat(pay.amount)||0).toLocaleString('en-IN')}</td>
+          <td class="py-3 px-6 text-right font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/10 dark:bg-emerald-900/10">+₹${(parseFloat(pay.amount)||0).toLocaleString('en-IN')}</td>
           <td class="py-3 px-6 text-right">
-             <button onclick="deletePayment('${pay.id}')" class="text-slate-400 hover:text-rose-600 transition p-2 hover:bg-rose-50 rounded-full" title="Delete Entry">
+             <button onclick="deletePayment('${pay.id}')" class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-full" title="Delete Entry">
                <i data-feather="trash-2" class="w-4 h-4"></i>
              </button>
           </td>

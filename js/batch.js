@@ -55,12 +55,22 @@ document.addEventListener("DOMContentLoaded", () => {
         border-radius: 0.75rem; /* rounded-xl */
         transition: all 0.2s;
       }
+      /* Dark Mode for Input Container */
+      .dark .input-container {
+        background-color: #0f172a; /* slate-900 */
+        border-color: #334155; /* slate-700 */
+      }
+
       .input-container:focus-within {
         background-color: #ffffff;
         border-color: #3b82f6;
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         transform: translateY(-1px);
       }
+      .dark .input-container:focus-within {
+        background-color: #1e293b; /* slate-800 */
+      }
+
       .input-container:focus-within .icon-slot { color: #3b82f6; }
       
       .naked-input {
@@ -73,6 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
         color: #1e293b;
         font-weight: 500;
       }
+      /* Dark Mode for Input Text */
+      .dark .naked-input {
+        color: #f8fafc; /* slate-50 */
+      }
+
       /* Remove number spinners */
       .naked-input::-webkit-outer-spin-button,
       .naked-input::-webkit-inner-spin-button {
@@ -90,25 +105,25 @@ document.addEventListener("DOMContentLoaded", () => {
     <section class="font-inter max-w-6xl mx-auto mt-10 px-4 mb-20">
       
       <div class="text-center mb-10">
-        <h2 class="text-4xl font-extrabold text-slate-800 tracking-tight mb-2">
+        <h2 class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-2">
           Batch Profit Calculator
         </h2>
-        <p class="text-slate-500 text-lg">Optimize your pastry margins with precision.</p>
+        <p class="text-slate-500 dark:text-slate-400 text-lg">Optimize your pastry margins with precision.</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <div class="lg:col-span-7 space-y-6">
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <h3 class="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"></path></svg>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8">
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600 dark:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"></path></svg>
               Batch Details
             </h3>
             
             <form id="batch-form" class="space-y-6" autocomplete="off">
               
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cost to Produce</label>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Cost to Produce</label>
                 <div class="input-container">
                   <div class="pl-4 pr-1 icon-slot text-slate-400 font-semibold select-none">₹</div>
                   <input type="number" id="cost" placeholder="20.00" class="naked-input" min="0.01" step="0.01" required />
@@ -117,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Selling Price</label>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Selling Price</label>
                 <div class="input-container">
                   <div class="pl-4 pr-1 icon-slot text-slate-400 font-semibold select-none">₹</div>
                   <input type="number" id="price" placeholder="50.00" class="naked-input" min="0.01" step="0.01" required />
@@ -126,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Batch Quantity</label>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Batch Quantity</label>
                 <div class="input-container">
                   <div class="pl-4 pr-1 icon-slot text-slate-400 select-none">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
@@ -136,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
               </div>
 
-              <div id="form-error" class="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm hidden flex items-center gap-2">
+              <div id="form-error" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm hidden flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span id="error-msg"></span>
               </div>
@@ -144,14 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="flex gap-3 pt-2">
                 <button 
                   type="submit" 
-                  class="flex-1 bg-slate-900 text-white py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-slate-700 hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex justify-center items-center gap-2"
+                  class="flex-1 bg-slate-900 dark:bg-blue-600 text-white py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-slate-700 dark:hover:bg-blue-500 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex justify-center items-center gap-2"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   Calculate
                 </button>
-                <button type="button" id="reset-btn" class="px-6 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 py-3.5 rounded-xl font-semibold transition-colors">
+                <button type="button" id="reset-btn" class="px-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white py-3.5 rounded-xl font-semibold transition-colors">
                   Reset
                 </button>
               </div>
@@ -159,13 +174,13 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <div class="mt-8">
-            <button id="toggle-presets-btn" class="w-full group flex items-center justify-between px-6 py-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 transition-all shadow-sm">
+            <button id="toggle-presets-btn" class="w-full group flex items-center justify-between px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm">
               <div class="flex items-center gap-3">
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
+                <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </div>
                 <div class="text-left">
-                  <span class="block font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">Saved Batches</span>
+                  <span class="block font-semibold text-slate-800 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">Saved Batches</span>
                   <span class="block text-xs text-slate-400" id="toggle-status">Click to view library</span>
                 </div>
               </div>
@@ -173,9 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>
 
             <div id="preset-section" class="overflow-hidden transition-all duration-500 ease-in-out" style="max-height:0; opacity:0;">
-              <div class="bg-white border-x border-b border-slate-200 rounded-b-xl p-4 shadow-inner bg-slate-50/50">
+              <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-xl p-4 shadow-inner bg-slate-50/50 dark:bg-slate-900/50">
                 
-                <div class="input-container bg-white mb-4">
+                <div class="input-container bg-white dark:bg-slate-900 mb-4">
                   <div class="pl-3 pr-2 text-slate-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                   </div>
@@ -199,33 +214,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <div class="lg:col-span-5 space-y-6">
           
-          <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sticky top-8">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-6 sticky top-8">
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Financials</h3>
             
-            <div id="grossProfitTile" class="relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 bg-slate-50 border border-slate-100">
+            <div id="grossProfitTile" class="relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
               <div class="relative z-10">
-                <p class="text-sm font-medium text-slate-500 mb-1">Total Gross Profit</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Gross Profit</p>
                 <div class="flex items-baseline gap-2">
-                  <h2 id="profit" class="text-4xl font-extrabold text-slate-900 tracking-tight">₹0.00</h2>
+                  <h2 id="profit" class="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">₹0.00</h2>
                 </div>
               </div>
               <div class="absolute -right-4 -top-4 w-24 h-24 bg-current opacity-10 rounded-full blur-xl"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-6">
-              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                 <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Revenue</p>
-                <p id="revenue" class="text-lg font-bold text-slate-700">₹0.00</p>
+                <p id="revenue" class="text-lg font-bold text-slate-700 dark:text-slate-200">₹0.00</p>
               </div>
-              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                 <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Total Cost</p>
-                <p id="costs" class="text-lg font-bold text-slate-700">₹0.00</p>
+                <p id="costs" class="text-lg font-bold text-slate-700 dark:text-slate-200">₹0.00</p>
               </div>
             </div>
 
-            <div class="bg-slate-900 rounded-xl p-5 text-white flex items-center justify-between">
+            <div class="bg-slate-900 dark:bg-blue-600 rounded-xl p-5 text-white flex items-center justify-between">
               <div>
-                <p class="text-xs text-slate-400 uppercase font-bold">Profit Margin</p>
+                <p class="text-xs text-slate-400 dark:text-blue-100 uppercase font-bold">Profit Margin</p>
                 <p id="margin" class="text-2xl font-bold mt-1">0.00%</p>
               </div>
               <div class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
@@ -233,8 +248,8 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-slate-100">
-              <button id="save-preset-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 font-medium hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group">
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+              <button id="save-preset-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-medium hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group">
                 <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                 <span>Save this Batch</span>
               </button>
@@ -279,19 +294,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const tile = document.getElementById("grossProfitTile");
     const profitText = document.getElementById("profit");
     
-    // Clean classes
-    tile.className = "relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 border";
-    profitText.className = "text-4xl font-extrabold tracking-tight";
+    // Clean classes (Added dark mode resets)
+    tile.className = "relative overflow-hidden rounded-xl p-6 mb-4 transition-all duration-500 border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400";
+    profitText.className = "text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white";
 
     if (profit > 0) {
-      tile.classList.add("bg-green-50", "border-green-100", "text-green-500");
-      profitText.classList.add("text-green-700");
+      tile.classList.add("bg-green-50", "border-green-100", "text-green-500", "dark:bg-green-900/20", "dark:border-green-900", "dark:text-green-400");
+      profitText.classList.remove("text-slate-900", "dark:text-white");
+      profitText.classList.add("text-green-700", "dark:text-green-400");
     } else if (profit < 0) {
-      tile.classList.add("bg-red-50", "border-red-100", "text-red-500");
-      profitText.classList.add("text-red-700");
-    } else {
-      tile.classList.add("bg-slate-50", "border-slate-100", "text-slate-500");
-      profitText.classList.add("text-slate-900");
+      tile.classList.add("bg-red-50", "border-red-100", "text-red-500", "dark:bg-red-900/20", "dark:border-red-900", "dark:text-red-400");
+      profitText.classList.remove("text-slate-900", "dark:text-white");
+      profitText.classList.add("text-red-700", "dark:text-red-400");
     }
   };
 
@@ -376,29 +390,29 @@ document.addEventListener("DOMContentLoaded", () => {
     presetList.innerHTML = items.map(d => {
       const safeId = d.__id;
       return `
-        <div class="group relative flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer relative-dropdown"
+        <div class="group relative flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-sm transition-all cursor-pointer relative-dropdown"
              onclick='window.applyPreset(${JSON.stringify({ cost: d.cost, price: d.price, qty: d.qty })});'>
           
           <div class="flex items-center gap-3 overflow-hidden">
-            <div class="h-10 w-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm shrink-0">
+            <div class="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center font-bold text-sm shrink-0">
                ${d.name ? d.name.charAt(0).toUpperCase() : '#'}
             </div>
             <div class="min-w-0">
-              <h4 class="font-semibold text-slate-800 text-sm truncate pr-2 group-hover:text-blue-700 transition-colors">${d.name}</h4>
-              <p class="text-xs text-slate-500 truncate">₹${d.price} sell • ₹${d.cost} cost</p>
+              <h4 class="font-semibold text-slate-800 dark:text-white text-sm truncate pr-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">${d.name}</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate">₹${d.price} sell • ₹${d.cost} cost</p>
             </div>
           </div>
 
           <div class="relative ml-2" onclick="event.stopPropagation();">
-            <button onclick="window.toggleDropdown('${safeId}')" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+            <button onclick="window.toggleDropdown('${safeId}')" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
             </button>
-            <div id="dropdown-${safeId}" class="hidden absolute right-0 mt-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl z-20 transform transition-all duration-200 origin-top-right opacity-0 scale-95">
+            <div id="dropdown-${safeId}" class="hidden absolute right-0 mt-2 w-32 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 transform transition-all duration-200 origin-top-right opacity-0 scale-95">
               <div class="py-1">
-                <button onclick='editPreset("${safeId}", ${JSON.stringify(d)})' class="flex w-full items-center px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600">
+                <button onclick='editPreset("${safeId}", ${JSON.stringify(d)})' class="flex w-full items-center px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400">
                   Edit
                 </button>
-                <button onclick='deletePreset("${safeId}", "${d.name}")' class="flex w-full items-center px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50">
+                <button onclick='deletePreset("${safeId}", "${d.name}")' class="flex w-full items-center px-4 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                   Delete
                 </button>
               </div>

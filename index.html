@@ -309,9 +309,15 @@
         <span class="sidebar-label text-sm">Invoice</span>
       </a>
       <a href="#payments" class="nav-link group" data-tooltip="Payments">
-        <i data-feather="credit-card" class="nav-icon"></i>
-        <span class="sidebar-label text-sm">Payments</span>
-      </a>
+  <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h12"></path>
+    <path d="M6 8h12"></path>
+    <path d="M6 13l8.5 10"></path>
+    <path d="M6 13h3"></path>
+    <path d="M9 13c6.627 0 12-5.373 12-12"></path>
+  </svg>
+  <span class="sidebar-label text-sm">Payments</span>
+</a>
       <a href="#orders" class="nav-link group" data-tooltip="Orders">
         <i data-feather="shopping-bag" class="nav-icon"></i>
         <span class="sidebar-label text-sm">Orders</span>
@@ -327,9 +333,14 @@
         <span class="sidebar-label text-sm">Clients</span>
       </a>
       <a href="#fixedExpenses" class="nav-link group" data-tooltip="Fixed Expenses">
-        <i data-feather="dollar-sign" class="nav-icon"></i>
-        <span class="sidebar-label text-sm">Fixed Expenses</span>
-      </a>
+  <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 6c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M21 6v4c0 1.66-4 3-9 3s-9-1.34-9-3V6"></path>
+    <path d="M21 10v4c0 1.66-4 3-9 3s-9-1.34-9-3v-4"></path>
+    <path d="M21 14v4c0 1.66-4 3-9 3s-9-1.34-9-3v-4"></path>
+  </svg>
+  <span class="sidebar-label text-sm">Fixed Expenses</span>
+</a>
       <a href="#export" class="nav-link group" data-tooltip="Export">
         <i data-feather="upload-cloud" class="nav-icon"></i>
         <span class="sidebar-label text-sm">Export</span>
@@ -370,56 +381,145 @@
 
     <div class="p-4 md:p-8 w-full max-w-[1400px] mx-auto text-slate-800 dark:text-slate-200">
       
-      <div id="home" class="page-section">
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-8 md:p-12 shadow-2xl mb-10">
-          <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-          <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-pink-500 opacity-20 rounded-full blur-3xl"></div>
-          <div class="relative z-10">
-            <div class="flex items-center gap-4 mb-4 opacity-80">
-              <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-white/10">Lush Patisserie Management</span>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
-              <span id="heroGreeting">Hello</span>, <span id="heroName">Chef</span>!
-            </h1>
-            <p class="text-lg md:text-xl text-blue-100 max-w-2xl leading-relaxed">
-              Ready to craft some magic today? Select a module below to manage your recipes, track orders, or calculate costs.
-            </p>
-          </div>
+     <div id="home" class="page-section">
+  
+  <div class="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 mb-6 shadow-2xl">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600 opacity-20 rounded-full blur-3xl -mt-10 -mr-10"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-600 opacity-20 rounded-full blur-3xl -mb-10 -ml-10"></div>
+    
+    <div class="relative z-10 flex flex-col md:flex-row justify-between items-end gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+           <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+           <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Lush Patisserie Madras</p>
         </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
+          <span id="heroGreeting">Hello</span>, <span id="heroName">Chef</span>
+        </h1>
+        <p class="text-slate-400 mt-2 text-sm">Your daily production command center.</p>
+      </div>
+      
+      <div class="hidden md:block text-right">
+        <span class="text-3xl font-bold text-white/90" id="currentDateDisplay">Today</span>
+      </div>
+    </div>
+  </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div onclick="showSection('workLog')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1">
-            <div class="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
-              <i data-feather="edit-3"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Daily Work Log</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Track production batches and log daily kitchen activities.</p>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <div onclick="showSection('workLog')" class="col-span-1 md:col-span-2 row-span-2 relative group cursor-pointer bg-gradient-to-br from-orange-500 to-rose-600 rounded-3xl p-8 text-white shadow-xl overflow-hidden transition-all hover:shadow-orange-500/25 hover:-translate-y-1">
+      <div class="absolute -right-6 -bottom-6 text-white/10 group-hover:text-white/20 transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12">
+        <i data-feather="edit-3" style="width: 180px; height: 180px; stroke-width: 1;"></i>
+      </div>
+      
+      <div class="relative z-10 h-full flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+             <i data-feather="clipboard" class="text-white w-6 h-6"></i>
           </div>
-          <div onclick="showSection('recipeCalculator')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1">
-            <div class="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Recipe Calculator</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Calculate ingredient costs and set profit margins instantly.</p>
-          </div>
-          <div onclick="showSection('orders')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1">
-            <div class="h-12 w-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
-              <i data-feather="shopping-bag"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Manage Orders</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">View active orders and track fulfillment status.</p>
-          </div>
-           <div onclick="showSection('invoice')" class="group cursor-pointer bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all duration-300 hover:-translate-y-1">
-            <div class="h-12 w-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4 group-hover:scale-110 transition-transform">
-              <i data-feather="file-text"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Generate Invoice</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Create professional invoices for your clients.</p>
-          </div>
+          <h2 class="text-3xl font-bold mb-2">Daily Log</h2>
+          <p class="text-orange-50 text-base max-w-xs leading-relaxed font-medium">Track production batches, staff shifts, and daily kitchen output.</p>
+        </div>
+        <div class="mt-8 flex items-center gap-2 text-sm font-bold uppercase tracking-wider opacity-90 group-hover:gap-4 transition-all">
+          <span>Start Log</span> <i data-feather="arrow-right" class="w-4 h-4"></i>
         </div>
       </div>
+    </div>
+
+    <div onclick="showSection('dashboard')" class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-500 transition-all cursor-pointer group hover:-translate-y-1">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400">
+          <i data-feather="pie-chart"></i>
+        </div>
+        <span class="text-xs font-bold text-slate-300 group-hover:text-purple-500 transition-colors">STATS</span>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 dark:text-white">Analytics</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Performance & Trends.</p>
+    </div>
+
+    <div onclick="showSection('invoice')" class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer group hover:-translate-y-1">
+       <div class="flex items-center justify-between mb-4">
+        <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <i data-feather="file-text"></i>
+        </div>
+        <span class="text-xs font-bold text-slate-300 group-hover:text-emerald-500 transition-colors">BILLING</span>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 dark:text-white">Invoice</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Generate Client Bills.</p>
+    </div>
+
+    <div onclick="showSection('recipeCalculator')" class="col-span-1 md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer group hover:-translate-y-1 flex items-center justify-between relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-50 dark:bg-blue-900/10 rounded-full blur-2xl group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 transition-colors"></div>
+      
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path>
+              </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white">Recipe Calculator</h3>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Calculate ingredients & margins.</p>
+      </div>
+      
+      <div class="relative z-10 w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+        <i data-feather="chevron-right" class="w-4 h-4"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      
+      <button onclick="showSection('inventory')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all text-left group">
+        <div class="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-slate-500 group-hover:text-blue-500 transition-colors shadow-sm">
+          <i data-feather="package" class="w-4 h-4"></i>
+        </div>
+        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Add Ingredient</span>
+      </button>
+
+      <button onclick="showSection('clients')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all text-left group">
+        <div class="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-slate-500 group-hover:text-emerald-500 transition-colors shadow-sm">
+          <i data-feather="user-plus" class="w-4 h-4"></i>
+        </div>
+        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">New Client</span>
+      </button>
+
+      <button onclick="showSection('payments')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all text-left group">
+        <div class="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-slate-500 group-hover:text-green-500 transition-colors shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h12"></path>
+            <path d="M6 8h12"></path>
+            <path d="M6 13l8.5 10"></path>
+            <path d="M6 13h3"></path>
+            <path d="M9 13c6.627 0 12-5.373 12-12"></path>
+          </svg>
+        </div>
+        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Record Payment</span>
+      </button>
+
+      <button onclick="showSection('orders')" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all text-left group">
+        <div class="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-slate-500 group-hover:text-orange-500 transition-colors shadow-sm">
+          <i data-feather="shopping-bag" class="w-4 h-4"></i>
+        </div>
+        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">View Orders</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Simple script to set the current date
+  const d = new Date();
+  const options = { weekday: 'long', month: 'short', day: 'numeric' };
+  document.getElementById('currentDateDisplay').textContent = d.toLocaleDateString('en-US', options);
+  feather.replace(); 
+</script>
+
       <div id="workLog" class="page-section">
         <div id="batchCalculator"></div> 
         <div id="dailyLog" class="mt-8"></div>
